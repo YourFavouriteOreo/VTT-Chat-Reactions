@@ -5,7 +5,16 @@ Hooks.once("init", async () => {
 });
 
 Hooks.once("ready", async () => {
-    
+    console.log("loadedd chatreactions")
+});
+
+Hooks.on("renderChatMessage", async (message,element) => {
+    console.log(message)
+    console.log(element[0])
+    const test = element[0]
+    const p = document.createElement("p");
+    p.textContent = "Hello, World!";
+    test?.appendChild(p)
 });
 
 

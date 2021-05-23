@@ -1,7 +1,7 @@
 {
-  "name": "module",
-  "title": "New Module",
-  "description": "",
+  "name": "chatreactions",
+  "title": "Chat Reactions",
+  "description": "This module is designed to add twemoji chat reactions to default chat messages in FoundryVTT",
   "version": "This is auto replaced",
   "library": "false",
   "manifestPlusVersion": "1.0.0",
@@ -26,7 +26,7 @@
 
   ],
   "esmodules": [
-    "module.js"
+    "chatreactions.js"
   ],
   "scripts": [
 
