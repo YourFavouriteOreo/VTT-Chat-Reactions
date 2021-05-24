@@ -1,9 +1,11 @@
 import { TemplatePreloader } from "./module/helper/TemplatePreloader";
 import { EmojiButton } from "@joeattardi/emoji-button";
+import DirectoryPicker from "./lib/DirectoryPicker";
 
 let socket;
 let picker;
 let currentMessage;
+const customEmojis:any = [];
 
 Hooks.once("socketlib.ready", () => {
   console.log("SOCKET LIB READY!!!!");
@@ -13,25 +15,74 @@ Hooks.once("socketlib.ready", () => {
   socket.register("handleReaction", handleReaction);
 });
 
-
 Hooks.once("init", async () => {
   console.log(
     "===========================♥ ChatReactions ♥=========================="
   );
+
+  game.settings.register("chatreactions", "chat-reactions-directory", {
+    name: "Custom Emojis",
+    hint: "You can add more custom emojis for your players to interact with!",
+    scope: "world", // This specifies a world-level setting
+    config: true, // This specifies that the setting appears in the configuration view
+    //@ts-ignore
+    type: DirectoryPicker.Directory, // The default value for the setting,
+    onChange: () => {
+      window.location.reload();
+    },
+  });
+
+  if (game.settings.get("chatreactions", "chat-reactions-directory") === "") {
+    ui.notifications?.warn(
+      "The Emoji Reactions module supports custom emojis, Please setup a custom directory to add them!"
+    );
+  } else {
+    const dir = DirectoryPicker.parse(
+      game.settings.get("chatreactions", "chat-reactions-directory")
+    );
+    const fileList = await DirectoryPicker.browse(
+      dir.activeSource,
+      dir.current,
+      { bucket: dir.bucket }
+    );
+    console.log("FILE LIST");
+    console.log(fileList);
+    fileList["files"].forEach(function (value, i) {
+      customEmojis.push(
+        {
+          name:`${i}`,
+          emoji : value
+        }
+      );
+    });
+  }
+
   picker = new EmojiButton({
     style: "twemoji",
+    custom: customEmojis,
   }) as EmojiButton;
 
   picker.on("emoji", (selection) => {
     // `selection` object has an `emoji` property
     // containing the selected emoji
+    console.log(selection)
     //@ts-ignore
-    socket.executeAsGM(
-      "handleReaction",
-      selection.emoji,
-      currentMessage,
-      game.user
-    );
+    if (selection.custom){
+      socket.executeAsGM(
+        "handleReaction",
+        selection.url,
+        currentMessage,
+        game.user
+      );
+    }
+    else {
+      socket.executeAsGM(
+        "handleReaction",
+        selection.emoji,
+        currentMessage,
+        game.user
+      );
+    }
   });
 });
 
@@ -39,13 +90,11 @@ function handleReaction(emoji: string, sentMessage, user: User) {
   let currentEmojiState = {};
 
   sentMessage = game.messages?.get(sentMessage._id);
-  console.log(sentMessage);
   if (sentMessage.getFlag("world", "emoji")) {
     currentEmojiState = JSON.parse(
       sentMessage.getFlag("world", "emoji") as string
     );
   }
-  console.log("handleReactionExecution");
 
   if (currentEmojiState[emojiUnicode(emoji)]) {
     if (currentEmojiState[emojiUnicode(emoji)].includes(user._id)) {
@@ -54,13 +103,12 @@ function handleReaction(emoji: string, sentMessage, user: User) {
       ].filter(function (value) {
         return value != user._id;
       });
-      if (currentEmojiState[emojiUnicode(emoji)].length === 0){
-        delete currentEmojiState[emojiUnicode(emoji)]
+      if (currentEmojiState[emojiUnicode(emoji)].length === 0) {
+        delete currentEmojiState[emojiUnicode(emoji)];
       }
     } else {
       currentEmojiState[emojiUnicode(emoji)].push(user._id);
     }
-    
   } else {
     currentEmojiState[emojiUnicode(emoji)] = [user._id];
   }
@@ -69,22 +117,17 @@ function handleReaction(emoji: string, sentMessage, user: User) {
 
 Hooks.once("ready", async () => {
   console.log("loadedd chatreactions");
-  console.log(game.user);
 });
 
 Hooks.on("renderChatMessage", async (message, element) => {
-  console.log(message);
   let currentEmojiState = {};
   if (message.getFlag("world", "emoji")) {
     currentEmojiState = JSON.parse(message.getFlag("world", "emoji") as string);
-    console.log(currentEmojiState);
   }
 
   const emojiRack = document.createElement("div");
   emojiRack.id = "chatReactionRack";
-  console.log(currentEmojiState);
   for (const [key, value] of Object.entries(currentEmojiState)) {
-    console.log(value);
     let isvoted = false;
     const button = document.createElement("button");
     const voters = value as Array<string>;
@@ -97,7 +140,13 @@ Hooks.on("renderChatMessage", async (message, element) => {
     const EmojiImage = document.createElement("img");
     const EmojiReactions = document.createElement("p");
     EmojiReactions.textContent = `${voters.length}`;
-    EmojiImage.src = `https://twemoji.maxcdn.com/v/latest/svg/${key}.svg`;
+    console.log(key)
+    if(key.includes('/')){
+      EmojiImage.src = window.location.origin+'/'+key;
+    }
+    else {
+      EmojiImage.src = `https://twemoji.maxcdn.com/v/latest/svg/${key}.svg`;  
+    }
     EmojiImage.className = "emoji-image";
     ButtonContent.className = "emoji-button-content";
     ButtonContent.appendChild(EmojiImage);
@@ -113,7 +162,7 @@ Hooks.on("renderChatMessage", async (message, element) => {
       //@ts-ignore
       socket.executeAsGM(
         "handleReaction",
-        String.fromCodePoint(parseInt (key, 16)),
+        key.includes("/")?key:String.fromCodePoint(parseInt(key, 16)),
         message,
         game.user
       );
@@ -122,35 +171,45 @@ Hooks.on("renderChatMessage", async (message, element) => {
   }
 
   const messageElement = element[0];
-  const p = document.createElement("button");
-  const EmojiImage = document.createElement("img");
-  EmojiImage.src = `https://twemoji.maxcdn.com/v/latest/svg/2795.svg`;
-  EmojiImage.className = "emoji-image";
-  p.appendChild(EmojiImage)
-  p.className += "emoji-button trigger";
+  if (Object.entries(currentEmojiState).length < 4) {
+    const p = document.createElement("button");
+    const EmojiImage = document.createElement("img");
+    EmojiImage.src = `https://twemoji.maxcdn.com/v/latest/svg/2795.svg`;
+    EmojiImage.className = "emoji-image";
+    p.appendChild(EmojiImage);
+    p.className += "emoji-button trigger";
 
-  // tslint:disable-next-line
-  p?.addEventListener("click", function () {
-    picker.togglePicker(p);
-    currentMessage = message;
-  });
-  emojiRack.appendChild(p);
+    // tslint:disable-next-line
+    p?.addEventListener("click", function () {
+      picker.togglePicker(p);
+      currentMessage = message;
+    });
+    emojiRack.appendChild(p);
+  }
   messageElement?.appendChild(emojiRack);
 });
 
+function isEmoji(emoji){
+  const re = new RegExp('(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])')
+  return re.exec(emoji) 
+}
+
 function emojiUnicode(emoji) {
-  let comp;
-  if (emoji.length === 1) {
-    comp = emoji.charCodeAt(0);
+  if (isEmoji(emoji)){
+    let comp;
+    if (emoji.length === 1) {
+      comp = emoji.charCodeAt(0);
+    }
+    comp =
+      (emoji.charCodeAt(0) - 0xd800) * 0x400 +
+      (emoji.charCodeAt(1) - 0xdc00) +
+      0x10000;
+    if (comp < 0) {
+      comp = emoji.charCodeAt(0);
+    }
+    return comp.toString("16");
   }
-  comp =
-    (emoji.charCodeAt(0) - 0xd800) * 0x400 +
-    (emoji.charCodeAt(1) - 0xdc00) +
-    0x10000;
-  if (comp < 0) {
-    comp = emoji.charCodeAt(0);
-  }
-  return comp.toString("16");
+  return emoji
 }
 
 if (process.env.NODE_ENV === "development") {
