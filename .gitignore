@@ -11,6 +11,7 @@ icons/\!dox/
 npm-debug.log
 coverage/
 debug/
+dist/
 docs/
 node_modules/
 bin/

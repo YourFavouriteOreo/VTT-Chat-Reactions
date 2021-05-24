@@ -4,6 +4,7 @@
   "description": "This module is designed to add twemoji chat reactions to default chat messages in FoundryVTT",
   "version": "This is auto replaced",
   "library": "false",
+  "socket":true,
   "manifestPlusVersion": "1.0.0",
   "minimumCoreVersion": "0.7.9",
   "compatibleCoreVersion": "0.7.9",
