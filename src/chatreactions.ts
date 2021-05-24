@@ -5,10 +5,11 @@ import DirectoryPicker from "./lib/DirectoryPicker";
 let socket;
 let picker;
 let currentMessage;
-const customEmojis:any = [];
+const emojiDirectories: any = [];
+const customEmojis: any = [];
 
 Hooks.once("socketlib.ready", () => {
-  console.log("SOCKET LIB READY!!!!");
+  // Setup Socket Lib for GM ability to add Chat Reactions
   // @ts-ignore
   socket = socketlib.registerModule("chatreactions");
   // @ts-ignore
@@ -19,6 +20,29 @@ Hooks.once("init", async () => {
   console.log(
     "===========================♥ ChatReactions ♥=========================="
   );
+
+  const modules = await game.modules;
+  modules.forEach((module) => {
+    // Go through all modules to find Emoji Packs to add
+    if (module.data["flags"]?.["emojiPacker"]) {
+      console.log(`\nChat Reactions found ${module.data["title"]}\n`);
+      emojiDirectories.push(
+        `modules/${module.data["name"]}${module.data["flags"]?.["emojiPacker"]}`
+      );
+    }
+  });
+
+  emojiDirectories.forEach(async (directory) => {
+    const dir = DirectoryPicker.parse(directory);
+    const fileList = await DirectoryPicker.browse(
+      dir.activeSource,
+      dir.current,
+      {
+        bucket: dir.bucket,
+      }
+    );
+    addToCustomEmojiList(fileList, customEmojis);
+  });
 
   game.settings.register("chatreactions", "chat-reactions-directory", {
     name: "Custom Emojis",
@@ -45,16 +69,7 @@ Hooks.once("init", async () => {
       dir.current,
       { bucket: dir.bucket }
     );
-    console.log("FILE LIST");
-    console.log(fileList);
-    fileList["files"].forEach(function (value, i) {
-      customEmojis.push(
-        {
-          name:`${i}`,
-          emoji : value
-        }
-      );
-    });
+    addToCustomEmojiList(fileList, customEmojis);
   }
 
   picker = new EmojiButton({
@@ -65,17 +80,16 @@ Hooks.once("init", async () => {
   picker.on("emoji", (selection) => {
     // `selection` object has an `emoji` property
     // containing the selected emoji
-    console.log(selection)
+    console.log(selection);
     //@ts-ignore
-    if (selection.custom){
+    if (selection.custom) {
       socket.executeAsGM(
         "handleReaction",
         selection.url,
         currentMessage,
         game.user
       );
-    }
-    else {
+    } else {
       socket.executeAsGM(
         "handleReaction",
         selection.emoji,
@@ -96,23 +110,34 @@ function handleReaction(emoji: string, sentMessage, user: User) {
     );
   }
 
-  if (currentEmojiState[emojiUnicode(emoji)]) {
-    if (currentEmojiState[emojiUnicode(emoji)].includes(user._id)) {
-      currentEmojiState[emojiUnicode(emoji)] = currentEmojiState[
-        emojiUnicode(emoji)
+  const translatedEmoji = emojiUnicode(emoji);
+
+  if (currentEmojiState[translatedEmoji]) {
+    if (currentEmojiState[translatedEmoji].includes(user._id)) {
+      currentEmojiState[translatedEmoji] = currentEmojiState[
+        translatedEmoji
       ].filter(function (value) {
         return value != user._id;
       });
-      if (currentEmojiState[emojiUnicode(emoji)].length === 0) {
-        delete currentEmojiState[emojiUnicode(emoji)];
+      if (currentEmojiState[translatedEmoji].length === 0) {
+        delete currentEmojiState[translatedEmoji];
       }
     } else {
-      currentEmojiState[emojiUnicode(emoji)].push(user._id);
+      currentEmojiState[translatedEmoji].push(user._id);
     }
   } else {
-    currentEmojiState[emojiUnicode(emoji)] = [user._id];
+    currentEmojiState[translatedEmoji] = [user._id];
   }
   sentMessage.setFlag("world", "emoji", JSON.stringify(currentEmojiState));
+}
+
+function addToCustomEmojiList(fileList, customEmojis) {
+  fileList["files"].forEach(function (value) {
+    customEmojis.push({
+      name: `${value.split("/").pop(-1).split(".").slice(0, -1).join(".")}`,
+      emoji: value,
+    });
+  });
 }
 
 Hooks.once("ready", async () => {
@@ -140,12 +165,11 @@ Hooks.on("renderChatMessage", async (message, element) => {
     const EmojiImage = document.createElement("img");
     const EmojiReactions = document.createElement("p");
     EmojiReactions.textContent = `${voters.length}`;
-    console.log(key)
-    if(key.includes('/')){
-      EmojiImage.src = window.location.origin+'/'+key;
-    }
-    else {
-      EmojiImage.src = `https://twemoji.maxcdn.com/v/latest/svg/${key}.svg`;  
+    console.log(key);
+    if (key.includes("/")) {
+      EmojiImage.src = window.location.origin + "/" + key;
+    } else {
+      EmojiImage.src = `https://twemoji.maxcdn.com/v/latest/svg/${key}.svg`;
     }
     EmojiImage.className = "emoji-image";
     ButtonContent.className = "emoji-button-content";
@@ -162,7 +186,7 @@ Hooks.on("renderChatMessage", async (message, element) => {
       //@ts-ignore
       socket.executeAsGM(
         "handleReaction",
-        key.includes("/")?key:String.fromCodePoint(parseInt(key, 16)),
+        key.includes("/") ? key : String.fromCodePoint(parseInt(key, 16)),
         message,
         game.user
       );
@@ -189,13 +213,15 @@ Hooks.on("renderChatMessage", async (message, element) => {
   messageElement?.appendChild(emojiRack);
 });
 
-function isEmoji(emoji){
-  const re = new RegExp('(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])')
-  return re.exec(emoji) 
+function isEmoji(emoji) {
+  const re = new RegExp(
+    "(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])"
+  );
+  return re.exec(emoji);
 }
 
 function emojiUnicode(emoji) {
-  if (isEmoji(emoji)){
+  if (isEmoji(emoji)) {
     let comp;
     if (emoji.length === 1) {
       comp = emoji.charCodeAt(0);
@@ -209,7 +235,7 @@ function emojiUnicode(emoji) {
     }
     return comp.toString("16");
   }
-  return emoji
+  return emoji;
 }
 
 if (process.env.NODE_ENV === "development") {
