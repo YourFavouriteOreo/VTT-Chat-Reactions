@@ -1,5 +1,5 @@
 # Why?
-![Animated Parrot](.github/anim_parrot.gif)
+![Animated Parrot](.github/anim_parrot.gif)     
 An image is worth a thousand words, therefore a animated parrot gif must be worth a million . This module is there so your players can react to chat messages / rolls or just anything with more than just words.
 
 # Current Features

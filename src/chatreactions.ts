@@ -41,21 +41,24 @@ Hooks.once("init", async () => {
         bucket: dir.bucket,
       }
     );
+    // Load all the custom emojis from emoji packs
     addToCustomEmojiList(fileList, customEmojis);
   });
 
+  // Store the custom emoji directory for loading up all them delciious emojis
   game.settings.register("chatreactions", "chat-reactions-directory", {
     name: "Custom Emojis",
     hint: "You can add more custom emojis for your players to interact with!",
-    scope: "world", // This specifies a world-level setting
-    config: true, // This specifies that the setting appears in the configuration view
+    scope: "world", 
+    config: true, 
     //@ts-ignore
-    type: DirectoryPicker.Directory, // The default value for the setting,
+    type: DirectoryPicker.Directory,
     onChange: () => {
       window.location.reload();
     },
   });
 
+  // Warn User/GM if the directory isnt defined
   if (game.settings.get("chatreactions", "chat-reactions-directory") === "") {
     ui.notifications?.warn(
       "The Emoji Reactions module supports custom emojis, Please setup a custom directory to add them!"
@@ -69,6 +72,7 @@ Hooks.once("init", async () => {
       dir.current,
       { bucket: dir.bucket }
     );
+    // Load Up Custom Emojis from folder
     addToCustomEmojiList(fileList, customEmojis);
   }
 
@@ -103,6 +107,7 @@ Hooks.once("init", async () => {
 function handleReaction(emoji: string, sentMessage, user: User) {
   let currentEmojiState = {};
 
+  // Get Current State of Emojis if it exists
   sentMessage = game.messages?.get(sentMessage._id);
   if (sentMessage.getFlag("world", "emoji")) {
     currentEmojiState = JSON.parse(
@@ -112,6 +117,7 @@ function handleReaction(emoji: string, sentMessage, user: User) {
 
   const translatedEmoji = emojiUnicode(emoji);
 
+  // Reaction Logic
   if (currentEmojiState[translatedEmoji]) {
     if (currentEmojiState[translatedEmoji].includes(user._id)) {
       currentEmojiState[translatedEmoji] = currentEmojiState[
@@ -131,6 +137,7 @@ function handleReaction(emoji: string, sentMessage, user: User) {
   sentMessage.setFlag("world", "emoji", JSON.stringify(currentEmojiState));
 }
 
+// Get all emoji image files from the directory and add them to the picker
 function addToCustomEmojiList(fileList, customEmojis) {
   fileList["files"].forEach(function (value) {
     customEmojis.push({
@@ -140,16 +147,15 @@ function addToCustomEmojiList(fileList, customEmojis) {
   });
 }
 
-Hooks.once("ready", async () => {
-  console.log("loadedd chatreactions");
-});
-
+// Logic for Button Styling and Rendering
 Hooks.on("renderChatMessage", async (message, element) => {
   let currentEmojiState = {};
+  // Get current state of emojis
   if (message.getFlag("world", "emoji")) {
     currentEmojiState = JSON.parse(message.getFlag("world", "emoji") as string);
   }
 
+  // Add All the reactions and render them accordingly as if the current user reacted or not
   const emojiRack = document.createElement("div");
   emojiRack.id = "chatReactionRack";
   for (const [key, value] of Object.entries(currentEmojiState)) {
@@ -165,7 +171,6 @@ Hooks.on("renderChatMessage", async (message, element) => {
     const EmojiImage = document.createElement("img");
     const EmojiReactions = document.createElement("p");
     EmojiReactions.textContent = `${voters.length}`;
-    console.log(key);
     if (key.includes("/")) {
       EmojiImage.src = window.location.origin + "/" + key;
     } else {
@@ -194,6 +199,7 @@ Hooks.on("renderChatMessage", async (message, element) => {
     emojiRack.appendChild(button);
   }
 
+  // Create Picker Button and add it to the Emoji Rack
   const messageElement = element[0];
   if (Object.entries(currentEmojiState).length < 4) {
     const p = document.createElement("button");
@@ -214,6 +220,7 @@ Hooks.on("renderChatMessage", async (message, element) => {
 });
 
 function isEmoji(emoji) {
+  // Check if the parameter passed is an emoji or not 
   const re = new RegExp(
     "(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])"
   );
@@ -221,6 +228,7 @@ function isEmoji(emoji) {
 }
 
 function emojiUnicode(emoji) {
+  // Return unicode or actual emojis or just return img urls
   if (isEmoji(emoji)) {
     let comp;
     if (emoji.length === 1) {
