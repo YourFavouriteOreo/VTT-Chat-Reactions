@@ -84,7 +84,6 @@ Hooks.once("init", async () => {
   picker.on("emoji", (selection) => {
     // `selection` object has an `emoji` property
     // containing the selected emoji
-    console.log(selection);
     //@ts-ignore
     if (selection.custom) {
       socket.executeAsGM(
