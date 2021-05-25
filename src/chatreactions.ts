@@ -2,6 +2,7 @@ import { TemplatePreloader } from "./module/helper/TemplatePreloader";
 import { EmojiButton } from "@joeattardi/emoji-button";
 import DirectoryPicker from "./lib/DirectoryPicker";
 import utils from "./utils";
+import ImagePicker from "./lib/ImagePicker";
 
 
 let socket;
@@ -20,7 +21,7 @@ Hooks.once("socketlib.ready", () => {
 
 Hooks.once("init", async () => {
   console.log(
-    "===========================♥ ChatReactions ♥=========================="
+    "===========================♥ Chat Reactions ♥=========================="
   );
 
   const modules = await game.modules;
@@ -55,6 +56,19 @@ Hooks.once("init", async () => {
     config: true, 
     //@ts-ignore
     type: DirectoryPicker.Directory,
+    onChange: () => {
+      window.location.reload();
+    },
+  });
+
+  // Allow GM to upload custom emojis
+  game.settings.register("chatreactions", "upload-to-directory", {
+    name: "Upload Custom Emojis",
+    hint: "",
+    scope: "world", 
+    config: true, 
+    //@ts-ignore
+    type: ImagePicker.Img,
     onChange: () => {
       window.location.reload();
     },
