@@ -1,27 +1,27 @@
 .emoji-button {
-  color:white;
+  color: white;
   border-radius: 10px;
-  margin-left:5px;
   height: 2rem;
   width: 3.25rem;
   line-height: 1;
   font-size: 0.85rem;
+  margin-right: 5px;
 }
 
-.invert{
-    filter:invert(100%)
+.invert {
+  filter: invert(100%);
 }
 
 .emoji-picker__wrapper {
   z-index: 30;
 }
 
-.reaction{
-    background: rgba(0,0,0,0.6);
+.reaction {
+  background: rgba(0, 0, 0, 0.6);
 }
 
 .emoji-active {
-  background: rgba(0, 0, 0, 0.80);
+  background: rgba(0, 0, 0, 0.8);
   font-weight: bold;
   border: 1px solid rgba(255, 0, 0, 0.8);
   box-shadow: 0px 0px 4px rgba(255, 0, 0, 0.75);
@@ -33,7 +33,7 @@
 
 .emoji-button-content {
   display: flex;
-  padding:0px 2px;
+  padding: 0px 2px;
   justify-content: space-between;
 }
 
@@ -51,4 +51,12 @@
 #chatReactionRack {
   display: flex;
   margin-top: 5px;
+}
+
+.trigger {
+  background-color: transparent;
+  border: none;
+  width: 30px;
+  border-radius: 100%;
+  height: 30px;
 }
