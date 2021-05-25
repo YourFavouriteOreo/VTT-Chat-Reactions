@@ -123,8 +123,8 @@ Upon getting the current emoji state it handles the logic of the emojis and rewr
 - Remove user from the list of user_ids
 - If the list of user_ids is empty, remove the reaction     
 
-        Words of Warning        
-        All emoji data unless being displayed are actively stored as unicode or in the case of paths for custom emojis are left alone. Emojis are not used to data storage simply because I wanted to avoid any potential issues.
+# Words of Warning on Emoji Storage        
+All emoji data unless being displayed are actively stored as unicode or in the case of paths for custom emojis are left alone. Emojis are not used to data storage simply because I wanted to avoid any potential issues.
         
 
 
