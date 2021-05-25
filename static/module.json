@@ -26,16 +26,17 @@
     }
   ],
   "dependencies": [
-
+    {
+      "name": "socketlib",
+      "type": "module",
+      "manifest": "https://raw.githubusercontent.com/manuelVo/foundryvtt-socketlib/master/module.json"
+    }
   ],
   "conflicts": [
 
   ],
   "esmodules": [
     "chatreactions.js"
-  ],
-  "scripts": [
-
   ],
   "styles": [
     "/styles/module.css"

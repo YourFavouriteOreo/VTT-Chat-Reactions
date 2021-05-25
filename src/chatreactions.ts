@@ -1,6 +1,8 @@
 import { TemplatePreloader } from "./module/helper/TemplatePreloader";
 import { EmojiButton } from "@joeattardi/emoji-button";
 import DirectoryPicker from "./lib/DirectoryPicker";
+import utils from "./utils";
+
 
 let socket;
 let picker;
@@ -47,8 +49,8 @@ Hooks.once("init", async () => {
 
   // Store the custom emoji directory for loading up all them delciious emojis
   game.settings.register("chatreactions", "chat-reactions-directory", {
-    name: "Custom Emojis",
-    hint: "You can add more custom emojis for your players to interact with!",
+    name: utils.localize('settings.chatReactionsDirectory.name'),
+    hint: utils.localize('settings.chatReactionsDirectory.hint'),
     scope: "world", 
     config: true, 
     //@ts-ignore

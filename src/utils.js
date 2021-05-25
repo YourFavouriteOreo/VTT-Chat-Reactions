@@ -2,8 +2,17 @@ import DirectoryPicker from "./lib/DirectoryPicker.js";
 import logger from "./logger.js";
 
 const existingFiles = new Set();
+const  MODULE_NAME = 'chatreactions'
 
 const utils = {
+  /**
+ * Custom wrapper for localization, it adds the module name in front of the string
+ * and returns the localize string
+ */
+localize: (path) =>{
+  return game.i18n.localize(`${MODULE_NAME}.${path}`);
+  },
+
   fileExistsUpdate: (fileList) => {
     const targetFiles = fileList.filter((f) => !existingFiles.has(f));
     for (const file of targetFiles) {
