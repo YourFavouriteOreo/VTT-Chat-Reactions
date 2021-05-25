@@ -72,7 +72,7 @@ To those who arent aware "renderChatMessage" is a hook/event fired by foundry on
  - Active Reactions
  - Picker Button
 
- ![Example of rendered buttons](.github/buttons.png)        
+ ![Example of rendered buttons](.github/buttons_example.png)        
 ### ***Reactions***
 These buttons are essentially created when people other than the user have reacted to a chat message and are unhighlighed and deconstrasted to make sure the user is fully aware that they have not reacted to the chat message in the same way.
 
