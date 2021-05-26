@@ -2,12 +2,12 @@
   "name": "chatreactions",
   "title": "Chat Reactions",
   "description": "This module is designed to add twemoji chat reactions to default chat messages in FoundryVTT as well use custom emoji packs that can be uploaded by users or/and custom emojis in a specified custom emoji directory",
-  "version": "This is auto replaced",
+  "version": "1.2.1",
   "library": "false",
   "socket":true,
   "manifestPlusVersion": "1.0.0",
   "minimumCoreVersion": "0.7.9",
-  "compatibleCoreVersion": "0.7.9",
+  "compatibleCoreVersion": "0.8.5",
   "authors": [
     {
       "name": "YourFavouriteOreo",
@@ -50,7 +50,7 @@
   ],
   "url": "This is auto replaced",
   "manifest": "This is auto replaced",
-  "download": "https://github.com/YourFavouriteOreo/VTT-Chat-Reactions/releases/download/1.0.0/chatreactions.zip",
+  "download": "https://github.com/YourFavouriteOreo/VTT-Chat-Reactions/releases/download/1.2.1/chatreactions.zip",
   "media": [
     {
       "type": "icon",
