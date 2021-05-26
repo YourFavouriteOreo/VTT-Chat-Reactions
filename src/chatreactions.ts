@@ -2,8 +2,7 @@ import { TemplatePreloader } from "./module/helper/TemplatePreloader";
 import { EmojiButton } from "@joeattardi/emoji-button";
 import DirectoryPicker from "./lib/DirectoryPicker";
 import utils from "./utils";
-import ImagePicker from "./lib/ImagePicker";
-
+// import ImagePicker from "./lib/ImagePicker";
 
 let socket;
 let picker;
@@ -50,10 +49,10 @@ Hooks.once("init", async () => {
 
   // Store the custom emoji directory for loading up all them delciious emojis
   game.settings.register("chatreactions", "chat-reactions-directory", {
-    name: utils.localize('settings.chatReactionsDirectory.name'),
-    hint: utils.localize('settings.chatReactionsDirectory.hint'),
-    scope: "world", 
-    config: true, 
+    name: utils.localize("settings.chatReactionsDirectory.name"),
+    hint: utils.localize("settings.chatReactionsDirectory.hint"),
+    scope: "world",
+    config: true,
     //@ts-ignore
     type: DirectoryPicker.Directory,
     onChange: () => {
@@ -62,17 +61,17 @@ Hooks.once("init", async () => {
   });
 
   // Allow GM to upload custom emojis
-  game.settings.register("chatreactions", "upload-to-directory", {
-    name: "Upload Custom Emojis",
-    hint: "",
-    scope: "world", 
-    config: true, 
-    //@ts-ignore
-    type: ImagePicker.Img,
-    onChange: () => {
-      window.location.reload();
-    },
-  });
+  // game.settings.register("chatreactions", "upload-to-directory", {
+  //   name: "Upload Custom Emojis",
+  //   hint: "",
+  //   scope: "world",
+  //   config: true,
+  //   //@ts-ignore
+  //   type: ImagePicker.Img,
+  //   onChange: () => {
+  //     window.location.reload();
+  //   },
+  // });
 
   // Warn User/GM if the directory isnt defined
   if (game.settings.get("chatreactions", "chat-reactions-directory") === "") {
@@ -102,22 +101,28 @@ Hooks.once("init", async () => {
     // containing the selected emoji
     //@ts-ignore
     if (selection.custom) {
-      socket.executeAsGM(
-        "handleReaction",
-        selection.url,
-        currentMessage,
-        game.user
-      );
+      socketExecute(selection.url, currentMessage);
     } else {
-      socket.executeAsGM(
-        "handleReaction",
-        selection.emoji,
-        currentMessage,
-        game.user
-      );
+      socketExecute(selection.emoji, currentMessage);
     }
   });
 });
+
+async function socketExecute(emoji, message) {
+  try {
+    await socket.executeAsGM("handleReaction", emoji, message, game.user);
+  } catch (error) {
+    if (game.scenes?.["current"] === undefined) {
+      ui.notifications?.warn(
+        "Please make sure a scene is loaded before reacting to messages"
+      );
+    } else {
+      ui.notifications?.warn(
+        "Due to foundry limitations, a GM needs to be online to use chat reactions"
+      );
+    }
+  }
+}
 
 function handleReaction(emoji: string, sentMessage, user: User) {
   let currentEmojiState = {};
@@ -204,11 +209,9 @@ Hooks.on("renderChatMessage", async (message, element) => {
     ButtonContent.addEventListener("click", function () {
       console.log("executing function");
       //@ts-ignore
-      socket.executeAsGM(
-        "handleReaction",
+      socketExecute(
         key.includes("/") ? key : String.fromCodePoint(parseInt(key, 16)),
-        message,
-        game.user
+        message
       );
     });
     emojiRack.appendChild(button);
@@ -235,7 +238,7 @@ Hooks.on("renderChatMessage", async (message, element) => {
 });
 
 function isEmoji(emoji) {
-  // Check if the parameter passed is an emoji or not 
+  // Check if the parameter passed is an emoji or not
   const re = new RegExp(
     "(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])"
   );
