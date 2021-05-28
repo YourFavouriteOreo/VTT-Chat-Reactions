@@ -3,6 +3,7 @@ import { EmojiButton } from "@joeattardi/emoji-button";
 import DirectoryPicker from "./lib/DirectoryPicker";
 import utils from "./utils";
 // import ImagePicker from "./lib/ImagePicker";
+import { parse } from "twemoji-parser";
 
 let socket;
 let picker;
@@ -18,9 +19,18 @@ Hooks.once("socketlib.ready", () => {
   socket.register("handleReaction", handleReaction);
 });
 
+function isHexColor(hex) {
+  const x =
+    typeof hex === "string" && hex.length === 6 && !isNaN(Number("0x" + hex));
+  if (x) {
+    setPicker();
+  }
+  return x;
+}
+
 Hooks.once("init", async () => {
   console.log(
-    "===========================♥ Chat Reactions ♥=========================="
+    "===========================♥ Chat  Reactions ♥=========================="
   );
 
   const modules = await game.modules;
@@ -60,6 +70,46 @@ Hooks.once("init", async () => {
     },
   });
 
+  game.settings.register("chatreactions", "picker-background", {
+    name: "Background color for the picker",
+    hint: "Background color in hex that will appear behind the emoji picker ",
+    scope: "world",
+    config: true,
+    type: String,
+    default: "d2d2c6",
+    onChange: (value) => {
+      isHexColor(value);
+    },
+  });
+
+  game.settings.register("chatreactions", "picker-font-color", {
+    name: "Font color for the picker",
+    hint: "Hex color used in the text for the emoji picker.This color will be contrasted for headers",
+    scope: "world",
+    config: true,
+    type: String,
+    default: "000000",
+    onChange: (value) => {
+      isHexColor(value);
+    },
+  });
+
+  game.settings.register("chatreactions", "category-active-icon-color", {
+    name: "Font color for the active icon/category",
+    hint: "Font color for the active icon/category. This color will be contrasted for inactive",
+    scope: "world",
+    config: true,
+    type: String,
+    default: "782e22",
+    onChange: (value) => {
+      isHexColor(value);
+    },
+  });
+
+//   --category-button-color
+
+// --category-button-active-color
+
   // Allow GM to upload custom emojis
   // game.settings.register("chatreactions", "upload-to-directory", {
   //   name: "Upload Custom Emojis",
@@ -91,22 +141,74 @@ Hooks.once("init", async () => {
     addToCustomEmojiList(fileList, customEmojis);
   }
 
-  picker = new EmojiButton({
-    style: "twemoji",
-    custom: customEmojis,
-  }) as EmojiButton;
+  setPicker();
 
   picker.on("emoji", (selection) => {
     // `selection` object has an `emoji` property
     // containing the selected emoji
-    //@ts-ignore
-    if (selection.custom) {
-      socketExecute(selection.url, currentMessage);
+    if (currentMessage === null) {
+      const chatMessage = $("#chat-message");
+      if (!selection.custom) {
+        chatMessage.val(
+          insert(
+            chatMessage.val(),
+            chatMessage.prop("selectionStart"),
+            selection.emoji
+          )
+        );
+      } else {
+        chatMessage.val(
+          insert(
+            chatMessage.val(),
+            chatMessage.prop("selectionStart"),
+            `:${selection.name}:`
+          )
+        );
+      }
     } else {
-      socketExecute(selection.emoji, currentMessage);
+      //@ts-ignore
+      if (selection.custom) {
+        socketExecute(selection.url, currentMessage);
+      } else {
+        socketExecute(selection.emoji, currentMessage);
+      }
     }
   });
 });
+
+function setPicker() {
+  picker = new EmojiButton({
+    style: "twemoji",
+    custom: customEmojis,
+    styleProperties: {
+      "--background-color": `#${game.settings.get(
+        "chatreactions",
+        "picker-background"
+      )}`,
+      "--text-color": `#${game.settings.get(
+        "chatreactions",
+        "picker-font-color"
+      )}`,
+      "--secondary-text-color": `#${game.settings.get(
+        "chatreactions",
+        "picker-font-color"
+      )}75`,
+      "--category-button-color": `#${game.settings.get(
+        "chatreactions",
+        "category-active-icon-color"
+      )}75`,
+      "--category-button-active-color": `#${game.settings.get(
+        "chatreactions",
+        "category-active-icon-color"
+      )}`,
+      "--font":"Signika"
+    },
+  }) as EmojiButton;
+}
+
+function insert(str, index, value) {
+  return str.substr(0, index) + value + str.substr(index);
+}
 
 async function socketExecute(emoji, message) {
   try {
@@ -128,7 +230,7 @@ function handleReaction(emoji: string, sentMessage, user: User) {
   let currentEmojiState = {};
 
   // Get Current State of Emojis if it exists
-  sentMessage = game.messages?.get(sentMessage._id);
+  sentMessage = game.messages?.get(sentMessage.id);
   if (sentMessage.getFlag("world", "emoji")) {
     currentEmojiState = JSON.parse(
       sentMessage.getFlag("world", "emoji") as string
@@ -139,20 +241,20 @@ function handleReaction(emoji: string, sentMessage, user: User) {
 
   // Reaction Logic
   if (currentEmojiState[translatedEmoji]) {
-    if (currentEmojiState[translatedEmoji].includes(user._id)) {
+    if (currentEmojiState[translatedEmoji].includes(user.id)) {
       currentEmojiState[translatedEmoji] = currentEmojiState[
         translatedEmoji
       ].filter(function (value) {
-        return value != user._id;
+        return value != user.id;
       });
       if (currentEmojiState[translatedEmoji].length === 0) {
         delete currentEmojiState[translatedEmoji];
       }
     } else {
-      currentEmojiState[translatedEmoji].push(user._id);
+      currentEmojiState[translatedEmoji].push(user.id);
     }
   } else {
-    currentEmojiState[translatedEmoji] = [user._id];
+    currentEmojiState[translatedEmoji] = [user.id];
   }
   sentMessage.setFlag("world", "emoji", JSON.stringify(currentEmojiState));
 }
@@ -167,8 +269,65 @@ function addToCustomEmojiList(fileList, customEmojis) {
   });
 }
 
+Hooks.on("renderChatLog", (_app, html, _options) => {
+  const chatForm = html.find("#chat-form")[0];
+  chatForm.classList += "relative";
+  const button = document.createElement("button");
+  button.innerHTML += `<img draggable="false" class="emoji" src="https://twemoji.maxcdn.com/v/latest/svg/2795.svg">`;
+  button.className += "chatReactionsPicker";
+  button.type = "button";
+  button.addEventListener("click", function () {
+    picker.togglePicker(button);
+    currentMessage = null;
+  });
+  chatForm.appendChild(button);
+});
+
+// const splitOn = (slicable, ...indices) =>
+//   [0, ...indices].map((n, i, m) => slicable.slice(n, m[i + 1]));
+
 // Logic for Button Styling and Rendering
 Hooks.on("renderChatMessage", async (message, element) => {
+  let messagingElement = element.find(".flavor-text")[0];
+  if (messagingElement === undefined) {
+    messagingElement = element.find(".message-content")[0];
+  }
+  const emojiData = parse(messagingElement.innerText);
+  emojiData.forEach((emoji) => {
+    const splitText = messagingElement.innerHTML.split(emoji.text);
+    messagingElement.innerHTML = "";
+    splitText.forEach((text, index) => {
+      messagingElement.innerHTML += text;
+      if (index < splitText.length - 1) {
+        messagingElement.innerHTML += `<img draggable="false" class="emoji" src="${emoji.url}"/>`;
+      }
+    });
+  });
+  const match = new RegExp(":[a-zA-Z0-9_]*:");
+  let matchResult = match.exec(messagingElement.innerHTML);
+
+  while (matchResult != null) {
+    const result = customEmojis.filter((customEmoji) => {
+      //@ts-ignore
+      return customEmoji.name === matchResult[0].replace(/:/g, "");
+    });
+    if (result.length > 0) {
+      messagingElement.innerHTML = messagingElement.innerHTML.replace(
+        matchResult[0],
+        `<img class="emoji" src="${
+          window.location.origin + "/" + result[0].emoji
+        }"/>`
+      );
+    } else {
+      messagingElement.innerHTML = messagingElement.innerHTML.replace(
+        matchResult[0],
+        matchResult[0].replace(/:/g, "")
+      );
+    }
+
+    matchResult = match.exec(messagingElement.innerHTML);
+  }
+
   let currentEmojiState = {};
   // Get current state of emojis
   if (message.getFlag("world", "emoji")) {
@@ -183,7 +342,7 @@ Hooks.on("renderChatMessage", async (message, element) => {
     const button = document.createElement("button");
     const voters = value as Array<string>;
     voters.forEach((voter) => {
-      if (game.user?._id == voter) {
+      if (game.user?.id == voter) {
         isvoted = true;
       }
     });
@@ -207,7 +366,6 @@ Hooks.on("renderChatMessage", async (message, element) => {
       button.className = "emoji-button reaction";
     }
     ButtonContent.addEventListener("click", function () {
-      console.log("executing function");
       //@ts-ignore
       socketExecute(
         key.includes("/") ? key : String.fromCodePoint(parseInt(key, 16)),

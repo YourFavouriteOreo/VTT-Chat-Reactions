@@ -8,6 +8,33 @@
   margin-right: 5px;
 }
 
+.relative {
+  position:relative;
+}
+
+#chat-message{
+  padding-left: 2.75em;
+  padding-top: 0.75em;
+}
+
+.chatReactionsPicker {
+  top: 10px;
+  left: 5px;
+  position: absolute;
+  height: 2em;
+  width: 2em;
+  border-radius: 5px;
+  cursor:pointer;
+}
+
+img.emoji {
+  height: 1.2em;
+  width: 1.2em;
+  margin: 0.05em 0.1em;
+  vertical-align: -0.1em;
+  border: none;
+}
+
 .invert {
   filter: invert(100%);
 }
