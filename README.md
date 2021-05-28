@@ -1,6 +1,6 @@
 # Why?
 ![Animated Parrot](.github/anim_parrot.gif)     
-An image is worth a thousand words, therefore a animated parrot gif must be worth a million . This module is there so your players can react to chat messages / rolls or just anything with more than just words.
+An image is worth a thousand words, therefore a animated parrot gif must be worth a million . This module is there so your players can add emojis to their text or react to chat messages / rolls or just anything with more than just words.
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/yourfavouriteoreo)
 
@@ -8,6 +8,8 @@ An image is worth a thousand words, therefore a animated parrot gif must be wort
  - Adds Emoji Picker to Chat items / rolls
  - Loads Custom Emojis from a dedicated emoji folder and adds them to the picker
  - Loads Custom Emojis from "Emoji Packs" that can be installed as side modules (no scripting required)
+ - Adds Emoji Picker next to text  area for easy use of emojis in chat
+ - Adds Twemoji and Custom emojis to chat
 
 # Development Instructions From the Template:
 About Bundler:  
