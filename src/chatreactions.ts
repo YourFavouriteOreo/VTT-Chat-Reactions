@@ -2,6 +2,7 @@ import { TemplatePreloader } from "./module/helper/TemplatePreloader";
 import { EmojiButton } from "@joeattardi/emoji-button";
 import DirectoryPicker from "./lib/DirectoryPicker";
 import utils from "./utils";
+//import giphySearchBar from "./giphySearchBar"
 // import ImagePicker from "./lib/ImagePicker";
 import { parse } from "twemoji-parser";
 
@@ -212,8 +213,9 @@ function insert(str, index, value) {
 
 async function socketExecute(emoji, message) {
   try {
-    await socket.executeAsGM("handleReaction", emoji, message, game.user);
+    await socket.executeAsGM("handleReaction", emoji, message.id, game.user?.id);
   } catch (error) {
+    console.log(error)
     if (game.scenes?.["current"] === undefined) {
       ui.notifications?.warn(
         "Please make sure a scene is loaded before reacting to messages"
@@ -226,14 +228,14 @@ async function socketExecute(emoji, message) {
   }
 }
 
-function handleReaction(emoji: string, sentMessage, user: User) {
+function handleReaction(emoji: string, sentMessageID:string, user: string) {
   let currentEmojiState = {};
 
   // Get Current State of Emojis if it exists
-  sentMessage = game.messages?.get(sentMessage.id);
-  if (sentMessage.getFlag("world", "emoji")) {
+  const sentMessage = game.messages?.get(sentMessageID);
+  if (sentMessage?.getFlag("world", "emoji")) {
     currentEmojiState = JSON.parse(
-      sentMessage.getFlag("world", "emoji") as string
+      sentMessage?.getFlag("world", "emoji") as string
     );
   }
 
@@ -241,22 +243,22 @@ function handleReaction(emoji: string, sentMessage, user: User) {
 
   // Reaction Logic
   if (currentEmojiState[translatedEmoji]) {
-    if (currentEmojiState[translatedEmoji].includes(user.id)) {
+    if (currentEmojiState[translatedEmoji].includes(user)) {
       currentEmojiState[translatedEmoji] = currentEmojiState[
         translatedEmoji
       ].filter(function (value) {
-        return value != user.id;
+        return value != user;
       });
       if (currentEmojiState[translatedEmoji].length === 0) {
         delete currentEmojiState[translatedEmoji];
       }
     } else {
-      currentEmojiState[translatedEmoji].push(user.id);
+      currentEmojiState[translatedEmoji].push(user);
     }
   } else {
-    currentEmojiState[translatedEmoji] = [user.id];
+    currentEmojiState[translatedEmoji] = [user];
   }
-  sentMessage.setFlag("world", "emoji", JSON.stringify(currentEmojiState));
+  sentMessage?.setFlag("world", "emoji", JSON.stringify(currentEmojiState));
 }
 
 // Get all emoji image files from the directory and add them to the picker
@@ -268,23 +270,55 @@ function addToCustomEmojiList(fileList, customEmojis) {
     });
   });
 }
-
+ 
 Hooks.on("renderChatLog", (_app, html, _options) => {
+  const chatControls = html.find("#chat-controls")[0]
+  const gifSearch = document.createElement("div")
+  gifSearch.id="gifSearch";
+  gifSearch.classList.add("hidden")
+  const gifSearchBar = document.createElement("input")
+  gifSearchBar.placeholder="Search for a Gif! 🔍" 
+  gifSearch.appendChild(gifSearchBar)
+  const gifSearchResults = document.createElement("div")
+  gifSearchResults.id="gifSearchResults"
+  gifSearch.appendChild(gifSearchResults)
+  chatControls.appendChild(gifSearch)
+  
   const chatForm = html.find("#chat-form")[0];
   chatForm.classList += "relative";
+  const options = document.createElement("div");
+  options.id="chatOptions"
+ 
   const button = document.createElement("button");
   button.innerHTML += `<img draggable="false" class="emoji" src="https://twemoji.maxcdn.com/v/latest/svg/2795.svg">`;
-  button.className += "chatReactionsPicker";
+  button.className += "optionsButton";
   button.type = "button";
   button.addEventListener("click", function () {
     picker.togglePicker(button);
     currentMessage = null;
   });
-  chatForm.appendChild(button);
+  options.appendChild(button);
+  // button = document.createElement("button");
+  // button.id="gifButton"
+  // button.textContent="GIF";
+  // button.className += "optionsButton";
+  // button.type = "button";
+  // giphySearchBar.bind(gifSearch,button)
+  // options.appendChild(button);
+  chatForm.appendChild(options);
 });
-
 // const splitOn = (slicable, ...indices) =>
 //   [0, ...indices].map((n, i, m) => slicable.slice(n, m[i + 1]));
+
+Hooks.on("preRenderChatMessage", async (message, element) => {
+  let messagingElement = element.find(".flavor-text")[0];
+  if (messagingElement === undefined) {
+    messagingElement = element.find(".message-content")[0];
+  }
+  if (message.data.content.includes("<img")){
+    messagingElement.innerHTML = message.data["_source"].content
+  }
+})
 
 // Logic for Button Styling and Rendering
 Hooks.on("renderChatMessage", async (message, element) => {
@@ -292,41 +326,45 @@ Hooks.on("renderChatMessage", async (message, element) => {
   if (messagingElement === undefined) {
     messagingElement = element.find(".message-content")[0];
   }
-  const emojiData = parse(messagingElement.innerText);
-  emojiData.forEach((emoji) => {
-    const splitText = messagingElement.innerHTML.split(emoji.text);
-    messagingElement.innerHTML = "";
-    splitText.forEach((text, index) => {
-      messagingElement.innerHTML += text;
-      if (index < splitText.length - 1) {
-        messagingElement.innerHTML += `<img draggable="false" class="emoji" src="${emoji.url}"/>`;
+
+
+    const emojiData = parse(messagingElement.innerText);
+    emojiData.forEach((emoji) => {
+      const splitText = messagingElement.innerHTML.split(emoji.text);
+      messagingElement.innerHTML = "";
+      splitText.forEach((text, index) => {
+        messagingElement.innerHTML += text;
+        if (index < splitText.length - 1) {
+          messagingElement.innerHTML += `<img draggable="false" class="emoji" src="${emoji.url}"/>`;
+        }
+      });
+    });
+    const match = new RegExp(":[a-zA-Z0-9_]*:");
+    let matchResult = match.exec(messagingElement.innerHTML);
+  
+    while (matchResult != null) {
+      const result = customEmojis.filter((customEmoji) => {
+        //@ts-ignore
+        return customEmoji.name === matchResult[0].replace(/:/g, "");
+      });
+      if (result.length > 0) {
+        messagingElement.innerHTML = messagingElement.innerHTML.replace(
+          matchResult[0],
+          `<img class="emoji" src="${
+            window.location.origin + "/" + result[0].emoji
+          }"/>`
+        );
+      } else {
+        messagingElement.innerHTML = messagingElement.innerHTML.replace(
+          matchResult[0],
+          matchResult[0].replace(/:/g, "")
+        );
       }
-    });
-  });
-  const match = new RegExp(":[a-zA-Z0-9_]*:");
-  let matchResult = match.exec(messagingElement.innerHTML);
-
-  while (matchResult != null) {
-    const result = customEmojis.filter((customEmoji) => {
-      //@ts-ignore
-      return customEmoji.name === matchResult[0].replace(/:/g, "");
-    });
-    if (result.length > 0) {
-      messagingElement.innerHTML = messagingElement.innerHTML.replace(
-        matchResult[0],
-        `<img class="emoji" src="${
-          window.location.origin + "/" + result[0].emoji
-        }"/>`
-      );
-    } else {
-      messagingElement.innerHTML = messagingElement.innerHTML.replace(
-        matchResult[0],
-        matchResult[0].replace(/:/g, "")
-      );
+  
+      matchResult = match.exec(messagingElement.innerHTML);
     }
-
-    matchResult = match.exec(messagingElement.innerHTML);
-  }
+  
+  
 
   let currentEmojiState = {};
   // Get current state of emojis

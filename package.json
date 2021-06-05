@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "@joeattardi/emoji-button": "^4.6.0",
+    "axios": "^0.21.1",
     "twemoji-parser": "^13.0.0"
   }
 }
