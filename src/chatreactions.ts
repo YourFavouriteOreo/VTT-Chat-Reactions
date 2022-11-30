@@ -481,6 +481,7 @@ Hooks.on("renderChatMessage", async (message, element: JQuery) => {
     }
     EmojiImage.className = "emoji-image";
     ButtonContent.className = "emoji-button-content";
+    ButtonContent.title = voters.map((userId) => game.users?.get(userId)?.name).join(", ");
     ButtonContent.appendChild(EmojiImage);
     ButtonContent.appendChild(EmojiReactions);
     button.appendChild(ButtonContent);
