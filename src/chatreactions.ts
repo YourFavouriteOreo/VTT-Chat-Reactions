@@ -66,6 +66,7 @@ Hooks.once("init", async () => {
     config: true,
     //@ts-ignore
     type: DirectoryPicker.Directory,
+    default: "",
     onChange: () => {
       window.location.reload();
     },
