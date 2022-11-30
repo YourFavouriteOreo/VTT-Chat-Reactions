@@ -69,6 +69,18 @@ Hooks.once("init", async () => {
     },
   });
 
+  game.settings.register("chatreactions", "compact-reaction-button", {
+    name: utils.localize("settings.compactReactionButton.name"),
+    hint: utils.localize("settings.compactReactionButton.hint"),
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: false,
+    onChange: () => {
+        window.location.reload();
+    }
+  })
+
   game.settings.register("chatreactions", "picker-background", {
     name: "Background color for the picker ",
     hint: "Background color in hex that will appear behind the emoji picker",
@@ -433,6 +445,20 @@ Hooks.on("renderChatMessage", async (message, element) => {
     emojiRack.appendChild(button);
   }
 
+  // Create the compact emoji button
+  if (game.settings.get("chatreactions", "compact-reaction-button")) {
+    const compactButton = document.createElement("a");
+    compactButton.className = "compact-reaction-button";
+    compactButton.innerHTML = "<i class='fas fa-smile'></i>";
+    element.find(".message-metadata")[0].appendChild(compactButton);
+
+    compactButton.addEventListener("click", function () {
+      picker.togglePicker(compactButton);
+      currentMessage = message;
+    });
+    if (jQuery.isEmptyObject(currentEmojiState)) return;
+  }
+
   // Create Picker Button and add it to the Emoji Rack
   const messageElement = element[0];
   if (Object.entries(currentEmojiState).length < 4) {
@@ -443,8 +469,7 @@ Hooks.on("renderChatMessage", async (message, element) => {
     p.appendChild(EmojiImage);
     p.className += "emoji-button trigger";
 
-    // tslint:disable-next-line
-    p?.addEventListener("click", function () {
+    p.addEventListener("click", function () {
       picker.togglePicker(p);
       currentMessage = message;
     });
