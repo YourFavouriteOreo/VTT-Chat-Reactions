@@ -5,6 +5,12 @@ import utils from "./utils";
 // import ImagePicker from "./lib/ImagePicker";
 import { parse } from "twemoji-parser";
 
+declare global {
+    interface LenientGlobalVariableTypes {
+        game: never;
+    }
+}
+
 let socket;
 
 let picker;
@@ -45,18 +51,9 @@ Hooks.once("init", async () => {
     }
   });
 
-  emojiDirectories.forEach(async (directory) => {
-    const dir = DirectoryPicker.parse(directory);
-    const fileList = await DirectoryPicker.browse(
-      dir.activeSource,
-      dir.current,
-      {
-        bucket: dir.bucket,
-      }
-    );
-    // Load all the custom emojis from emoji packs
-    addToCustomEmojiList(fileList, customEmojis);
-  });
+  for (const directory of emojiDirectories) {
+    await loadDirectory(directory);
+  }
 
   // Store the custom emoji directory for loading up all them delciious emojis
   game.settings.register("chatreactions", "chat-reactions-directory", {
@@ -154,16 +151,7 @@ Hooks.once("init", async () => {
       "The Emoji Reactions module supports custom emojis, Please setup a custom directory to add them!"
     );
   } else {
-    const dir = DirectoryPicker.parse(
-      game.settings.get("chatreactions", "chat-reactions-directory")
-    );
-    const fileList = await DirectoryPicker.browse(
-      dir.activeSource,
-      dir.current,
-      { bucket: dir.bucket }
-    );
-    // Load Up Custom Emojis from folder
-    addToCustomEmojiList(fileList, customEmojis);
+    await loadDirectory(game.settings.get("chatreactions", "chat-reactions-directory") as string);
   }
 
   setPicker();
@@ -288,6 +276,24 @@ function handleReaction(emoji: string, sentMessageID: string, user: string) {
     currentEmojiState[translatedEmoji] = [user];
   }
   sentMessage?.setFlag("world", "emoji", JSON.stringify(currentEmojiState));
+}
+
+async function loadDirectory(directory: string) {
+  const dir = DirectoryPicker.parse(directory);
+  await DirectoryPicker.browse(
+    dir.activeSource,
+    dir.current,
+    {
+      bucket: dir.bucket,
+    }
+  ).then((fileList) => {
+    // Load all the custom emojis from emoji packs
+    addToCustomEmojiList(fileList, customEmojis);
+  }).catch(() => {
+    Hooks.once("ready", () => {
+      ui.notifications?.warn("Chat Reactions: The GM must give you permission to use the file browser for you to use emoji packs.");
+    });
+  });
 }
 
 // Get all emoji image files from the directory and add them to the picker
