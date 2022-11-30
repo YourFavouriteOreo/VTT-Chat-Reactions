@@ -244,7 +244,7 @@ function setPicker() {
 }
 
 function insert(str, index, value) {
-  return str.substr(0, index) + value + str.substr(index);
+  return str.substring(0, index) + value + str.substring(index);
 }
 
 async function socketExecute(emoji, message) {
