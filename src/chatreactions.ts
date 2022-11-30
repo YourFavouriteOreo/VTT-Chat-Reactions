@@ -77,9 +77,21 @@ Hooks.once("init", async () => {
     type: Boolean,
     default: false,
     onChange: () => {
-        window.location.reload();
+      window.location.reload();
     }
-  })
+  });
+
+  game.settings.register("chatreactions", "compact-emoji-button", {
+    name: utils.localize("settings.compactEmojiButton.name"),
+    hint: utils.localize("settings.compactEmojiButton.hint"),
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: false,
+    onChange: () => {
+      window.location.reload();
+    }
+  });
 
   game.settings.register("chatreactions", "picker-background", {
     name: "Background color for the picker ",
@@ -321,13 +333,40 @@ function addToCustomEmojiList(fileList, customEmojis) {
 
 Hooks.on("renderChatLog", (_app, html, _options) => {
 
-  const chatForm = html.find("#chat-form")[0];
-  chatForm.classList += " relative ";
- 
-  const button = document.createElement("button");
-  button.innerHTML += `<img draggable="false" class="emoji" src="https://twemoji.maxcdn.com/v/latest/svg/2795.svg">`;
-  button.className += "emojiPickerButton";
-  button.type = "button";
+  let button;
+  // Compact emoji button
+  if (game.settings.get("chatreactions", "compact-emoji-button")) {
+    button = document.createElement("a");
+    button.classList.add("emoji-picker-button--compact");
+    button.innerHTML = `<i class="fas fa-smile"></i>`;
+    let controlButtons: JQuery = html.find(".control-buttons");
+    if (controlButtons.length === 0) {
+      controlButtons = $(`<div class="control-buttons"></div>`);
+      controlButtons.appendTo(html.find("#chat-controls"));
+    }
+    controlButtons.append($(button));
+
+    setTimeout(() => {
+      // Compensate for the :has selector not being supported in old browsers - make compatible with DF Chat Enhancement buttons
+      html.find("#dfcp-rt-buttons :is(.chat-archive, .export-log, .chat-flush)").css("display", "none");
+    }, 1);
+  } else { // Normal emoji button
+    button = document.createElement("button");
+    button.innerHTML += `<img draggable="false" class="emoji" src="https://twemoji.maxcdn.com/v/latest/svg/2795.svg">`;
+    button.className += "emojiPickerButton";
+    button.type = "button";
+
+    const chatForm = html.find("#chat-form")[0];
+    chatForm.classList += " relative ";
+    chatForm.appendChild(button);
+
+    { // Compensate for the :has selector not being supported in old browsers - add chatbox padding
+      const chatbox: JQuery = html.find("#chat-message");
+      chatbox.css("padding-left", "2.75em");
+      chatbox.css("padding-top", "0.75em");
+    }
+  }
+  button.title = "Add emoji";
   button.addEventListener("click", function () {
     picker.togglePicker(button);
     currentMessage = null;
