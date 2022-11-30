@@ -62,7 +62,7 @@ img.emoji.emoji-large {
 }
 
 .emoji-picker__wrapper {
-  z-index: 30;
+  z-index: 1000; /* So it appears above popped-out chat logs */
 }
 
 .reaction {
