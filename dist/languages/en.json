@@ -2,8 +2,21 @@
   "I18N.LANGUAGE": "English",
   "I18N.MAINTAINERS": "YourFavouriteOreo#6798",
 
-  "chatreactions.title": "Chat Reactions",
-
-  "chatreactions.settings.chatReactionsDirectory.name": "Custom Emojis Directory",
-  "chatreactions.settings.chatReactionsDirectory.hint": "You can add more custom emojis for your players to interact with!"
+  "chatreactions": {
+    "title": "Chat Reactions",
+    "settings": {
+      "chatReactionsDirectory": {
+        "name": "Custom Emojis Directory",
+        "hint": "You can add more custom emojis for your players to interact with!"
+      },
+      "compactReactionButton": {
+        "name": "Compact Reaction Button",
+        "hint": "Before any reactions are added to the message, this replaces the add reaction button with a small button in the message header next to the delete button for adding the first reaction so reaction-less messages won't take up extra space."
+      },
+      "compactEmojiButton": {
+        "name": "Compact Emoji Button",
+        "hint": "This replaces the add emoji button in the textbox with "
+      }
+    }
+  }
 }

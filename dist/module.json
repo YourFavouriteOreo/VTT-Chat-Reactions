@@ -1,13 +1,15 @@
 {
-  "name": "chatreactions",
+  "id": "chatreactions",
   "title": "Chat Reactions",
   "description": "This module is designed to add gif search functionality and twemoji chat reactions to default chat messages in FoundryVTT as well use custom emoji packs that can be uploaded by users or/and custom emojis in a specified custom emoji directory",
   "version": "1.4.0",
   "library": "false",
-  "socket":true,
+  "socket": true,
   "manifestPlusVersion": "1.0.0",
-  "minimumCoreVersion": "0.8.0",
-  "compatibleCoreVersion": "0.8.6",
+  "compatibility": {
+    "minimum": "10",
+    "verified": "10"
+  },
   "authors": [
     {
       "name": "YourFavouriteOreo",
@@ -25,13 +27,15 @@
       "discord": "discordID#0001"
     }
   ],
-  "dependencies": [
-    {
-      "name": "socketlib",
-      "type": "module",
-      "manifest": "https://raw.githubusercontent.com/manuelVo/foundryvtt-socketlib/master/module.json"
-    }
-  ],
+  "relationships": {
+    "requires": [
+      {
+        "id": "socketlib",
+        "type": "module",
+        "manifest": "https://raw.githubusercontent.com/manuelVo/foundryvtt-socketlib/master/module.json"
+      }
+    ]
+  },
   "conflicts": [
 
   ],
