@@ -156,6 +156,30 @@ Hooks.once("init", async () => {
     },
   });
 
+  game.settings.register("chatreactions", "max-recents", {
+    name: "Max recent emojis",
+    hint: "Max number of recent emojis to store.",
+    scope: "client",
+    config: true,
+    type: Number,
+    default: 50,
+    onChange: () => {
+      window.location.reload();
+    }
+  });
+
+  game.settings.register("chatreactions", "show-preview", {
+    name: "Show preview",
+    hint: "Show a preview of the emoji when hovering over it in the picker.",
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: true,
+    onChange: () => {
+      window.location.reload();
+    }
+  })
+
   // Allow the GM to choose which categories to show
   for (const category of categories) {
     game.settings.register("chatreactions", `show-category-${category}`, {
@@ -270,6 +294,8 @@ function createPicker(rootElement: HTMLElement = document.body) {
     custom: customEmojis,
     categories: categories as any,
     initialCategory: "recents",
+    maxRecents: game.settings.get("chatreactions", "max-recents") as number,
+    showPreview: game.settings.get("chatreactions", "show-preview") as boolean,
   }, {
     showCloseButton: true,
     onPositionLost: "close",
