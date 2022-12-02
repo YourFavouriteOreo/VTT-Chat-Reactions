@@ -493,7 +493,7 @@ Hooks.on("renderChatMessage", async (message, element: JQuery) => {
     ButtonContent.addEventListener("click", function () {
       //@ts-ignore
       socketExecute(
-        key.includes("/") ? key : String.fromCodePoint(parseInt(key, 16)),
+        key.includes("/") ? key : key.split("-").map((part) => String.fromCodePoint(parseInt(part, 16))).join(""),
         message
       );
     });
@@ -548,22 +548,10 @@ function isEmoji(emoji) {
 }
 
 function emojiUnicode(emoji) {
-  // Return unicode or actual emojis or just return img urls
-  if (isEmoji(emoji)) {
-    let comp;
-    if (emoji.length === 1) {
-      comp = emoji.charCodeAt(0);
-    }
-    comp =
-      (emoji.charCodeAt(0) - 0xd800) * 0x400 +
-      (emoji.charCodeAt(1) - 0xdc00) +
-      0x10000;
-    if (comp < 0) {
-      comp = emoji.charCodeAt(0);
-    }
-    return comp.toString("16");
-  }
-  return emoji;
+  if (!isEmoji(emoji)) return emoji;
+  if (emoji.length < 4)
+    return emoji.codePointAt(0).toString(16);
+  return [...emoji].map(e => e.codePointAt(0).toString(16)).join(`-`);
 }
 
 if (process.env.NODE_ENV === "development") {
