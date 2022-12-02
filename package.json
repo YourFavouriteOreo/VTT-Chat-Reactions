@@ -42,8 +42,10 @@
     "webpack-import-glob-loader": "^1.6.3"
   },
   "dependencies": {
-    "@joeattardi/emoji-button": "^4.6.0",
+    "@picmo/popup-picker": "^5.7.2",
+    "@picmo/renderer-twemoji": "^5.7.2",
     "axios": "^0.21.1",
-    "twemoji-parser": "^13.0.0"
+    "picmo": "^5.7.2",
+    "twemoji-parser": "^14.0.0"
   }
 }

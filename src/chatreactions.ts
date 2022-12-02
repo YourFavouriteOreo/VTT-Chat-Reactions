@@ -1,6 +1,7 @@
 import { TemplatePreloader } from "./module/helper/TemplatePreloader";
-import { EmojiButton } from "@joeattardi/emoji-button";
 import DirectoryPicker from "./lib/DirectoryPicker";
+import { createPopup, PopupPickerController } from "@picmo/popup-picker";
+import { TwemojiRenderer } from "@picmo/renderer-twemoji";
 import utils from "./utils";
 // import ImagePicker from "./lib/ImagePicker";
 import { parse } from "twemoji-parser";
@@ -13,12 +14,13 @@ declare global {
 
 let socket;
 
-let picker;
-let popoutPicker; // Picker especially for the PopOut! module windows
+let picker: PopupPickerController;
+let popoutPicker: PopupPickerController; // Picker especially for the PopOut! module windows
 let currentMessage;
 let currentChatBox;
 const emojiDirectories: any = [];
 const customEmojis: any = [];
+let categories = ['recents', 'custom', 'smileys-emotion', 'people-body', 'animals-nature', 'food-drink', 'activities', 'travel-places', 'objects', 'symbols', 'flags'];
 
 Hooks.once("socketlib.ready", () => {
   // Setup Socket Lib for GM ability to add Chat Reactions
@@ -117,7 +119,7 @@ Hooks.once("init", async () => {
   game.settings.register("chatreactions", "picker-font-color", {
     name: "Font color for the picker",
     hint:
-      "Hex color used in the text for the emoji picker.This color will be contrasted for headers",
+      "Hex color used in the text for the emoji picker. This color will be contrasted for headers",
     scope: "world",
     config: true,
     type: String,
@@ -154,6 +156,22 @@ Hooks.once("init", async () => {
     },
   });
 
+  // Allow the GM to choose which categories to show
+  for (const category of categories) {
+    game.settings.register("chatreactions", `show-category-${category}`, {
+      name: `Show Category: ${category}`,
+      hint: `Show emojis of the ${category} category in the emoji picker.`,
+      scope: "client",
+      config: true,
+      type: Boolean,
+      default: true,
+      onChange: () => {
+        window.location.reload();
+      },
+    });
+  }
+  categories = categories.filter((category) => game.settings.get("chatreactions", `show-category-${category}`))
+
   //   --category-button-color
 
   // --category-button-active-color
@@ -181,6 +199,43 @@ Hooks.once("init", async () => {
   }
 
   picker = createPicker();
+
+  const pickerCssRules = {
+    "--background-color": `#${game.settings.get(
+      "chatreactions",
+      "picker-background"
+    )}`,
+    "--secondary-background-color": `#${game.settings.get(
+        "chatreactions",
+        "picker-background"
+    )}`,
+    "--category-name-background-color": `#${game.settings.get(
+        "chatreactions",
+        "picker-background"
+    )}`,
+    "--category-name-text-color": `#${game.settings.get(
+        "chatreactions",
+        "picker-font-color"
+    )}75`,
+    "--text-color": `#${game.settings.get(
+      "chatreactions",
+      "picker-font-color"
+    )}`,
+    "--secondary-text-color": `#${game.settings.get(
+      "chatreactions",
+      "picker-font-color"
+    )}75`,
+    "--category-tab-color": `#${game.settings.get(
+      "chatreactions",
+      "category-active-icon-color"
+    )}75`,
+    "--category-tab-active-color": `#${game.settings.get(
+      "chatreactions",
+      "category-active-icon-color"
+    )}`,
+    "--hover-background-color": "#e7f3f8",
+  };
+  $("head").append(`<style class="emoji-picker__styles">.picmo-picker {${Object.entries(pickerCssRules).map(([key, value]) => `${key}: ${value};`).join("\n")}}</style>`);
 });
 
 function onEmojiInput(selection) {
@@ -188,29 +243,19 @@ function onEmojiInput(selection) {
     // containing the selected emoji
     if (currentMessage === null) {
       currentChatBox = currentChatBox || $("#chat-message");
-      if (!selection.custom) {
-        currentChatBox.val(
-          insert(
-            currentChatBox.val(),
-            currentChatBox.prop("selectionStart"),
-            selection.emoji
-          )
-        );
-      } else {
-        currentChatBox.val(
-          insert(
-            currentChatBox.val(),
-            currentChatBox.prop("selectionStart"),
-            `:${selection.name}:`
-          )
-        );
-      }
+      currentChatBox.val(
+        insert(
+          currentChatBox.val(),
+          currentChatBox.prop("selectionStart"),
+          selection.hexcode ? selection.emoji : `:${selection.emoji}:`
+        )
+      );
       setTimeout(() => {
         currentChatBox[0].focus();
       });
     } else {
       //@ts-ignore
-      if (selection.custom) {
+      if (!selection.hexcode) {
         socketExecute(selection.url, currentMessage);
       } else {
         socketExecute(selection.emoji, currentMessage);
@@ -219,35 +264,17 @@ function onEmojiInput(selection) {
   }
 
 function createPicker(rootElement: HTMLElement = document.body) {
-  const newPicker = new EmojiButton({
+  const newPicker = createPopup({
     rootElement: rootElement,
-    style: "twemoji",
+    renderer: new TwemojiRenderer(),
     custom: customEmojis,
-    styleProperties: {
-      "--background-color": `#${game.settings.get(
-        "chatreactions",
-        "picker-background"
-      )}`,
-      "--text-color": `#${game.settings.get(
-        "chatreactions",
-        "picker-font-color"
-      )}`,
-      "--secondary-text-color": `#${game.settings.get(
-        "chatreactions",
-        "picker-font-color"
-      )}75`,
-      "--category-button-color": `#${game.settings.get(
-        "chatreactions",
-        "category-active-icon-color"
-      )}75`,
-      "--category-button-active-color": `#${game.settings.get(
-        "chatreactions",
-        "category-active-icon-color"
-      )}`,
-      "--font": "Signika",
-    },
-  }) as EmojiButton;
-  newPicker.on("emoji", onEmojiInput);
+    categories: categories as any,
+    initialCategory: "recents",
+  }, {
+    showCloseButton: true,
+    onPositionLost: "close",
+  });
+  newPicker.addEventListener("emoji:select", onEmojiInput);
   return newPicker;
 }
 
@@ -330,17 +357,36 @@ async function loadDirectory(directory: string) {
 
 // Get all emoji image files from the directory and add them to the picker
 function addToCustomEmojiList(fileList, customEmojis) {
-  fileList["files"].forEach(function (value) {
+  fileList["files"].forEach(function(value) {
+    const name = `${value.split("/").pop(-1).split(".").slice(0, -1).join(".")}`.replace(/%20/g, " ");
     customEmojis.push({
-      name: `${value.split("/").pop(-1).split(".").slice(0, -1).join(".")}`,
-      emoji: value,
+      label: name,
+      emoji: name.replace(/ /g, "_"),
+      url: value,
     });
   });
+}
+
+function togglePicker(referenceEl: HTMLElement) {
+  if (!document.contains(referenceEl))
+    popoutPicker.toggle({
+      triggerElement: referenceEl,
+      referenceElement: referenceEl,
+    });
+  else
+    picker.toggle({
+      triggerElement: referenceEl,
+      referenceElement: referenceEl,
+    })
 }
 
 Hooks.on("PopOut:loaded", (app: Application, node: HTMLElement) => {
   if (app.element.find("#chat-message")) { // Chat window has been popped out into a new window
     popoutPicker = createPicker(node);
+    // Clone sprite sheet to new window so emojis won't be invisible
+    if (node.querySelector("#picmo-twemoji-sprites")) return; // Already cloned
+    const spriteSheet = document.getElementById("picmo-twemoji-sprites") as HTMLElement;
+    node.appendChild(spriteSheet.cloneNode(true));
   }
 });
 
@@ -381,10 +427,7 @@ Hooks.on("renderChatLog", (_app, html, _options) => {
   }
   button.title = "Add emoji";
   button.addEventListener("click", function () {
-    if (!document.contains(html[0])) // This is in a popped-out window (PopOut! module)
-      popoutPicker.togglePicker(button);
-    else
-      picker.togglePicker(button);
+    togglePicker(button);
     currentMessage = null;
     currentChatBox = html.find("#chat-message");
   });
@@ -424,13 +467,13 @@ Hooks.on("renderChatMessage", async (message, element: JQuery) => {
   while (matchResult != null) {
     const result = customEmojis.filter((customEmoji) => {
       //@ts-ignore
-      return customEmoji.name === matchResult[0].replace(/:/g, "");
+      return customEmoji.emoji === matchResult[0].replace(/:/g, "");
     });
     if (result.length > 0) {
       messagingElement.innerHTML = messagingElement.innerHTML.replace(
         matchResult[0],
         `<img class="emoji" src="${
-          window.location.origin + "/" + result[0].emoji
+          result[0].url
         }"/>`
       );
     } else {
@@ -475,7 +518,7 @@ Hooks.on("renderChatMessage", async (message, element: JQuery) => {
     const EmojiReactions = document.createElement("p");
     EmojiReactions.textContent = `${voters.length}`;
     if (key.includes("/")) {
-      EmojiImage.src = window.location.origin + "/" + key;
+      EmojiImage.src = key;
     } else {
       EmojiImage.src = `https://twemoji.maxcdn.com/v/latest/svg/${key}.svg`;
     }
@@ -508,10 +551,7 @@ Hooks.on("renderChatMessage", async (message, element: JQuery) => {
     element.find(".message-metadata")[0].appendChild(compactButton);
 
     compactButton.addEventListener("click", function() {
-      if (!document.contains(compactButton)) // This is in a popped-out window (PopOut! module)
-        popoutPicker.togglePicker(compactButton);
-      else
-        picker.togglePicker(compactButton);
+      togglePicker(compactButton);
       currentMessage = message;
     });
     if (jQuery.isEmptyObject(currentEmojiState)) return;
@@ -528,10 +568,7 @@ Hooks.on("renderChatMessage", async (message, element: JQuery) => {
     p.className += "emoji-button trigger";
 
     p.addEventListener("click", function() {
-      if (!document.contains(p)) // This is in a popped-out window (PopOut! module)
-        popoutPicker.togglePicker(p);
-      else
-        picker.togglePicker(p);
+      togglePicker(p);
       currentMessage = message;
     });
     emojiRack.appendChild(p);

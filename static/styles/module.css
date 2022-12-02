@@ -82,8 +82,21 @@ img.emoji.emoji-large {
   filter: invert(100%);
 }
 
-.emoji-picker__wrapper {
+.popupContainer {
   z-index: 1000; /* So it appears above popped-out chat logs */
+}
+
+.picmo-picker { /* Make more compact */
+  gap: 2px;
+}
+
+.picmo-picker .header {
+  padding-bottom: 0;
+  gap: 2px;
+}
+
+.picmo-picker .emojiCategory .categoryName {
+  font-family: 'Signika', sans-serif;
 }
 
 .reaction {

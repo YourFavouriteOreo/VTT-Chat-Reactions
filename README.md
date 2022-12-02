@@ -141,6 +141,6 @@ To ready the project for release run the command: npm run build:production
 
 # Credits:
 BadIdeasBureau, MrPrimate, Calego, Stäbchenfisch, Zeel, Arcanist, LukeAbby, Animu36 and many more from the League of Extraordinary FoundryVTT Developers for all the help and advice   
-Emoji Button by JoeAttardi for Picker Functionality: https://github.com/joeattardi/emoji-button     
+Picmo by JoeAttardi for Picker Functionality: https://github.com/joeattardi/picmo  
 Used webpack and setup files as reference: https://github.com/anvil-vtt/FateX   
 Used github workflow and template reference: https://github.com/League-of-Foundry-Developers/FoundryVTT-Module-Template   
