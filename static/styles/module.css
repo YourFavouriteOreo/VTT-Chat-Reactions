@@ -46,6 +46,12 @@
   display: none;
 }
 
+/* Make compact emoji button clickable when in DF Chat Enhancements merged message */
+.message-metadata {
+  z-index: 1;
+  max-height: 0; /* Make player view consistent with GM view */
+}
+
 .emojiPickerButton {
   height: 1.75rem;
   width: 1.75rem;
