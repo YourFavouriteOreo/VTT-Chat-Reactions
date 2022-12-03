@@ -139,7 +139,7 @@ export default class EmojiPleter {
     const rect = (this.element.parentNode as Element).getBoundingClientRect();
     return {
       width: rect.width + 'px',
-      bottom: window.innerHeight - rect.top + 'px',
+      bottom: (this.element.closest("body") as HTMLBodyElement).getBoundingClientRect().height - rect.top + 'px',
       left: rect.left + 'px'
     }
   }
@@ -149,7 +149,7 @@ export default class EmojiPleter {
     const div = document.createElement('div');
     div.id = 'emojipleter';
     div.appendChild(list);
-    document.body.appendChild(div);
+    (this.element.closest("body") as HTMLBodyElement).appendChild(div);
 
     div.scrollTop = div.scrollHeight;
     this.html = div;
