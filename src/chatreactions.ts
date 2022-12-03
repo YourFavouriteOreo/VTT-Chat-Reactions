@@ -93,7 +93,7 @@ Hooks.once("init", async () => {
     scope: "client",
     config: true,
     type: Boolean,
-    default: false,
+    default: true,
     onChange: () => {
       window.location.reload();
     }
@@ -105,7 +105,7 @@ Hooks.once("init", async () => {
     scope: "client",
     config: true,
     type: Boolean,
-    default: false,
+    default: true,
     onChange: () => {
       window.location.reload();
     }
