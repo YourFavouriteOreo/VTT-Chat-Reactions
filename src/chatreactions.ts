@@ -49,10 +49,10 @@ Hooks.once("init", async () => {
   const modules = await game.modules;
   modules.forEach((module) => {
     // Go through all modules to find Emoji Packs to add
-    if (module.data["flags"]?.["emojiPacker"]) {
-      console.log(`\nChat Reactions found ${module.data["title"]}\n`);
+    if (module["flags"]?.["emojiPacker"]) {
+      console.log(`\nChat Reactions found ${module["title"]}\n`);
       emojiDirectories.push(
-        `modules/${module.data["name"]}${module.data["flags"]?.["emojiPacker"]}`
+        `modules/${module["name"]}${module["flags"]?.["emojiPacker"]}`
       );
     }
   });
@@ -78,7 +78,7 @@ Hooks.once("init", async () => {
   game.settings.register("chatreactions", "emojipleter", {
     name: utils.localize("settings.emojipleter.name"),
     hint: utils.localize("settings.emojipleter.hint"),
-    scope: "world",
+    scope: "client",
     config: true,
     type: Boolean,
     default: true,
@@ -86,6 +86,18 @@ Hooks.once("init", async () => {
       window.location.reload();
     }
   });
+
+  game.settings.register("chatreactions", "emojipleter-max-results", {
+    name: utils.localize("settings.emojipleterMaxResults.name"),
+    hint: utils.localize("settings.emojipleterMaxResults.hint"),
+    scope: "client",
+    config: true,
+    type: Number,
+    default: 13,
+    onChange: () => {
+      window.location.reload();
+    }
+  })
 
   game.settings.register("chatreactions", "compact-reaction-button", {
     name: utils.localize("settings.compactReactionButton.name"),
@@ -431,7 +443,7 @@ Hooks.on("PopOut:loaded", (app: Application, node: HTMLElement) => {
 Hooks.on("renderChatLog", (_app, html, _options) => {
   // Add EmojiPleter
   if (game.settings.get("chatreactions", "emojipleter"))
-    new EmojiPleter(html.find("#chat-message")[0], customEmojis, categories);
+    new EmojiPleter(html.find("#chat-message")[0], customEmojis, game.settings.get("chatreactions", "emojipleter-max-results"));
 
   let button;
   // Compact emoji button

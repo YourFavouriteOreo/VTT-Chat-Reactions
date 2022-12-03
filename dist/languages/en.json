@@ -9,6 +9,10 @@
         "name": "Enable Emojipleter",
         "hint": "Shows possible emoji completions when typing a colon in chat."
       },
+      "emojipleterMaxResults": {
+        "name": "Emojipleter Max Results",
+        "hint": "The maximum number of emoji search results to show in the emojipleter."
+      },
       "chatReactionsDirectory": {
         "name": "Custom Emojis Directory",
         "hint": "You can add more custom emojis for your players to interact with!"

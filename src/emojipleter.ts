@@ -1,4 +1,4 @@
-import {CustomEmoji, IndexedDbStoreFactory} from "picmo";
+import {CustomEmoji, EmojiRecord, IndexedDbStoreFactory } from "picmo";
 import { parse } from "twemoji-parser";
 
 export default class EmojiPleter {
@@ -6,14 +6,15 @@ export default class EmojiPleter {
   public html: HTMLDivElement | undefined;
   private _selected: Element | undefined;
   private _word = '';
+  private _lastSearchTime;
   private readonly _customEmojis: CustomEmoji[];
-  private readonly _categories: { key: string, order: number }[];
+  private readonly _maxResults;
   private _db;
 
-  constructor(element: HTMLTextAreaElement, customEmojis: CustomEmoji[], categories: string[]) {
+  constructor(element: HTMLTextAreaElement, customEmojis: CustomEmoji[], maxResults) {
     this.element = element;
     this._customEmojis = customEmojis;
-    this._categories = categories.filter(c => c !== "recents").reverse().map((c, i) => ({ key: c, order: i }));
+    this._maxResults = maxResults;
     this._db = IndexedDbStoreFactory('en');
     this._db.open();
     this.activateListeners();
@@ -83,10 +84,42 @@ export default class EmojiPleter {
     }
   }
 
-  async _filter(str) {
+  _queryMatches(emoji, query: string) {
+    return emoji.label.toLowerCase().includes(query.toLowerCase()) || emoji.tags?.some(tag => tag.toLowerCase().includes(query.toLowerCase()));
+  }
+
+  async _filter(str, searchStartTime) {
     const str2 = str.substring(1).replace(/-/g, ' ');
-    // return [...this._customEmojis.filter(e => e.code.includes(str)), ...CONFIG.emojule.list.filter(e => e.code.includes(str2, 2))];
-    return await this._db.searchEmojis(str2, this._customEmojis, Infinity, this._categories);
+    const results: EmojiRecord[] = this._customEmojis.filter(emoji => this._queryMatches(emoji, str2));
+
+    return new Promise((resolve, reject) => {
+      if (results.length >= this._maxResults) return resolve(results); // Custom emojis already exceed result limit
+      const transaction = this._db.db.transaction("emoji", "readonly");
+      const emojiStore = transaction.objectStore("emoji");
+      const request = emojiStore.openCursor();
+
+      request.addEventListener("success", (event) => {
+        const cursor = event.target.result;
+        if (!cursor)
+          return resolve(results)
+
+        const emoji = cursor.value;
+        if (this._queryMatches(emoji, str2)) {
+          results.push(emoji);
+          if (results.length >= this._maxResults) {
+            return resolve(results);
+          }
+        }
+        cursor.continue();
+
+        if (this._lastSearchTime !== searchStartTime)
+          return resolve([]);
+      });
+
+      request.addEventListener("error", (error) => {
+        reject(error);
+      });
+    })
   }
 
   _getWord() {
@@ -100,7 +133,8 @@ export default class EmojiPleter {
 
   update(word) {
     this.getListTemplate(word).then((list) => {
-      if (!list) return this.close();
+      if (!list) return; // search was aborted due to a new search being started
+      if (list === -1) return this.close();
 
       if (!this._visible) this.show(list);
       this.html = this.html as HTMLDivElement;
@@ -112,8 +146,11 @@ export default class EmojiPleter {
   }
 
   async getListTemplate(word) {
-    const list = await this._filter(word);
-    if (list.length === 0) return null;
+    const searchTime = Date.now();
+    this._lastSearchTime = searchTime;
+    const list = await this._filter(word, searchTime) as EmojiRecord[];
+    if (this._lastSearchTime !== searchTime) return;
+    if (list.length === 0) return -1;
     const ul = document.createElement('ul');
     ul.classList.add('emojipleter-emojilist');
     for (const e of list) {

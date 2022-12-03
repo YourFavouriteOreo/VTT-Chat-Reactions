@@ -1,6 +1,6 @@
 #emojipleter {
   position: absolute;
-  z-index: 100;
+  z-index: 200;
   background: url(../../../ui/denim075.png) repeat;
   padding: 0;
   border-radius: 0.5em;
