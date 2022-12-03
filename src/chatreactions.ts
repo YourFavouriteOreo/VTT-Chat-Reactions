@@ -6,6 +6,8 @@ import utils from "./utils";
 // import ImagePicker from "./lib/ImagePicker";
 import { parse } from "twemoji-parser";
 
+import EmojiPleter from "./emojipleter";
+
 declare global {
     interface LenientGlobalVariableTypes {
         game: never;
@@ -71,6 +73,18 @@ Hooks.once("init", async () => {
     onChange: () => {
       window.location.reload();
     },
+  });
+
+  game.settings.register("chatreactions", "emojipleter", {
+    name: utils.localize("settings.emojipleter.name"),
+    hint: utils.localize("settings.emojipleter.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true,
+    onChange: () => {
+      window.location.reload();
+    }
   });
 
   game.settings.register("chatreactions", "compact-reaction-button", {
@@ -341,8 +355,6 @@ function handleReaction(emoji: string, sentMessageID: string, user: string) {
     );
   }
 
-  const translatedEmoji = emojiUnicode(emoji);
-
   // Reaction Logic
   if (currentEmojiState[emoji]) {
     if (currentEmojiState[emoji].includes(user)) {
@@ -417,6 +429,9 @@ Hooks.on("PopOut:loaded", (app: Application, node: HTMLElement) => {
 });
 
 Hooks.on("renderChatLog", (_app, html, _options) => {
+  // Add EmojiPleter
+  if (game.settings.get("chatreactions", "emojipleter"))
+    new EmojiPleter(html.find("#chat-message")[0], customEmojis, categories);
 
   let button;
   // Compact emoji button
@@ -482,7 +497,7 @@ Hooks.on("renderChatMessage", async (message, element: JQuery) => {
     messagingElement.innerHTML = "";
     splitText.forEach((text, index) => {
       messagingElement.innerHTML += text;
-      if (index < splitText.length - 1) {
+      if (emoji.url && index < splitText.length - 1) {
         messagingElement.innerHTML += `<img draggable="false" class="emoji" src="${emoji.url}"/>`;
       }
     });

@@ -1,3 +1,43 @@
+#emojipleter {
+  position: absolute;
+  z-index: 100;
+  background: url(../../../ui/denim075.png) repeat;
+  padding: 0;
+  border-radius: 0.5em;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  max-height: 500px;
+}
+
+#emojipleter .emojipleter-emojilist {
+  list-style-type: none;
+  padding: 0;
+  color: #ccc;
+  display: flex;
+  flex-flow: column-reverse nowrap;
+}
+
+#emojipleter .emojipleter-emoji {
+  padding: 0.5em 0.25em;
+  border-radius: 0.5em;
+  display: flex;
+  align-items: center;
+}
+
+#emojipleter span {
+  white-space: nowrap;
+}
+
+#emojipleter .emojipleter-emoji.selected{
+  background: #6594d6;
+}
+
+#emojipleter .emoji {
+  margin-right: 0.5em;
+  width: 1.5em;
+  height: 1.5em;
+}
+
 .emoji-button {
   color: white;
   border-radius: 10px;
@@ -69,8 +109,6 @@
 img.emoji {
   height: 1.2em;
   width: 1.2em;
-  margin: 0.05em 0.1em;
-  vertical-align: -0.1em;
   border: none;
 }
 img.emoji.emoji-large {
