@@ -344,21 +344,21 @@ function handleReaction(emoji: string, sentMessageID: string, user: string) {
   const translatedEmoji = emojiUnicode(emoji);
 
   // Reaction Logic
-  if (currentEmojiState[translatedEmoji]) {
-    if (currentEmojiState[translatedEmoji].includes(user)) {
-      currentEmojiState[translatedEmoji] = currentEmojiState[
-        translatedEmoji
+  if (currentEmojiState[emoji]) {
+    if (currentEmojiState[emoji].includes(user)) {
+      currentEmojiState[emoji] = currentEmojiState[
+        emoji
       ].filter(function (value) {
         return value != user;
       });
-      if (currentEmojiState[translatedEmoji].length === 0) {
-        delete currentEmojiState[translatedEmoji];
+      if (currentEmojiState[emoji].length === 0) {
+        delete currentEmojiState[emoji];
       }
     } else {
-      currentEmojiState[translatedEmoji].push(user);
+      currentEmojiState[emoji].push(user);
     }
   } else {
-    currentEmojiState[translatedEmoji] = [user];
+    currentEmojiState[emoji] = [user];
   }
   sentMessage?.setFlag("world", "emoji", JSON.stringify(currentEmojiState));
 }
@@ -546,7 +546,7 @@ Hooks.on("renderChatMessage", async (message, element: JQuery) => {
     if (key.includes("/")) {
       EmojiImage.src = key;
     } else {
-      EmojiImage.src = `https://twemoji.maxcdn.com/v/latest/svg/${key}.svg`;
+      EmojiImage.src = parse(key)[0].url;
     }
     EmojiImage.className = "emoji-image";
     ButtonContent.className = "emoji-button-content";
@@ -562,7 +562,7 @@ Hooks.on("renderChatMessage", async (message, element: JQuery) => {
     ButtonContent.addEventListener("click", function () {
       //@ts-ignore
       socketExecute(
-        key.includes("/") ? key : key.split("-").map((part) => String.fromCodePoint(parseInt(part, 16))).join(""),
+        key,
         message
       );
     });
@@ -601,21 +601,6 @@ Hooks.on("renderChatMessage", async (message, element: JQuery) => {
   }
   messageElement?.appendChild(emojiRack);
 });
-
-function isEmoji(emoji) {
-  // Check if the parameter passed is an emoji or not
-  const re = new RegExp(
-    "(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])"
-  );
-  return re.exec(emoji);
-}
-
-function emojiUnicode(emoji) {
-  if (!isEmoji(emoji)) return emoji;
-  if (emoji.length < 4)
-    return emoji.codePointAt(0).toString(16);
-  return [...emoji].map(e => e.codePointAt(0).toString(16)).join(`-`);
-}
 
 if (process.env.NODE_ENV === "development") {
   if (module.hot) {
