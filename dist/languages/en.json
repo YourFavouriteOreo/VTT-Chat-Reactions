@@ -5,6 +5,10 @@
   "chatreactions": {
     "title": "Chat Reactions",
     "settings": {
+      "emojipleter": {
+        "name": "Enable Emojipleter",
+        "hint": "Shows possible emoji completions when typing a colon in chat."
+      },
       "chatReactionsDirectory": {
         "name": "Custom Emojis Directory",
         "hint": "You can add more custom emojis for your players to interact with!"

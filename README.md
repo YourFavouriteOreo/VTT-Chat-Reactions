@@ -10,6 +10,7 @@ An image is worth a thousand words, therefore a animated parrot gif must be wort
  - Loads Custom Emojis from "Emoji Packs" that can be installed as side modules (no scripting required)
  - Adds Emoji Picker next to text  area for easy use of emojis in chat
  - Adds Twemoji and Custom emojis to chat
+ - Suggests emoji completions when typing a colon `:` in chat
 
 # Development Instructions From the Template:
 About Bundler:  
@@ -141,6 +142,7 @@ To ready the project for release run the command: npm run build:production
 
 # Credits:
 BadIdeasBureau, MrPrimate, Calego, Stäbchenfisch, Zeel, Arcanist, LukeAbby, Animu36 and many more from the League of Extraordinary FoundryVTT Developers for all the help and advice   
+Moerill for most of the emoji completion suggestion code: https://github.com/Moerill/Emojule  
 Picmo by JoeAttardi for Picker Functionality: https://github.com/joeattardi/picmo  
 Used webpack and setup files as reference: https://github.com/anvil-vtt/FateX   
 Used github workflow and template reference: https://github.com/League-of-Foundry-Developers/FoundryVTT-Module-Template   
