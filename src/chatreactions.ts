@@ -449,7 +449,7 @@ Hooks.on("renderChatLog", (_app, html, _options) => {
     setTimeout(() => {
       // Compensate for the :has selector not being supported in old browsers - make compatible with DF Chat Enhancement buttons
       html.find("#dfcp-rt-buttons :is(.chat-archive, .export-log, .chat-flush)").css("display", "none");
-    }, 0);
+    }, 1);
   } else { // Normal emoji button
     button = document.createElement("button");
     button.innerHTML += `<img draggable="false" class="emoji" src="https://twemoji.maxcdn.com/v/latest/svg/2795.svg">`;
