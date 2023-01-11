@@ -110,6 +110,7 @@ img.emoji, svg.emoji {
   height: 1.2em;
   width: 1.2em;
   border: none;
+  vertical-align: -.1em;
 }
 img.emoji.emoji-large, svg.emoji.emoji-large {
   height:2.4em;
