@@ -465,7 +465,7 @@ Hooks.on("renderChatLog", (_app, html, _options) => {
     }, 1);
   } else { // Normal emoji button
     button = document.createElement("button");
-    button.innerHTML += `<img draggable="false" class="emoji" src="https://twemoji.maxcdn.com/v/latest/svg/2795.svg">`;
+    button.innerHTML += `<svg class="emoji-image"><use xlink:href="#2795"></use></svg>`;
     button.className += "emojiPickerButton";
     button.type = "button";
 
