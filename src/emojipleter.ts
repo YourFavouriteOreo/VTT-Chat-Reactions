@@ -1,5 +1,6 @@
 import {CustomEmoji, EmojiRecord, IndexedDbStoreFactory } from "picmo";
-import { parse } from "twemoji-parser";
+
+import {toCodePoints} from "./common";
 
 export default class EmojiPleter {
   public readonly element: HTMLTextAreaElement;
@@ -156,17 +157,17 @@ export default class EmojiPleter {
     for (const e of list) {
       const li = ul.appendChild(document.createElement('li'));
       li.classList.add('emojipleter-emoji');
-      const img = li.appendChild(document.createElement('img'))
-      if (e.url) {
+      if (e.url) { // custom emoji
+        const img = li.appendChild(document.createElement('img'))
         img.src = e.url;
+        img.classList.add('emoji');
+        img.draggable = false;
         li.dataset['customEmoji'] = e.emoji
       } else {
-        img.src = parse(e.emoji)[0].url;
+        li.innerHTML += `<svg class="emoji"><use xlink:href="#${toCodePoints(e.emoji).join('-')}"></use></svg>`
         li.dataset['emoji'] = e.emoji;
       }
 
-      img.classList.add('emoji');
-      img.draggable = false;
       li.appendChild(document.createElement('span')).innerText = e.label.replace(/ /g, '-');
     }
     return ul;

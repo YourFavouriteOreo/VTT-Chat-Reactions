@@ -6,6 +6,7 @@ import utils from "./utils";
 // import ImagePicker from "./lib/ImagePicker";
 import { parse } from "twemoji-parser";
 
+import { toCodePoints } from "./common";
 import EmojiPleter from "./emojipleter";
 
 declare global {
@@ -510,7 +511,7 @@ Hooks.on("renderChatMessage", async (message, element: JQuery) => {
     splitText.forEach((text, index) => {
       messagingElement.innerHTML += text;
       if (emoji.url && index < splitText.length - 1) {
-        messagingElement.innerHTML += `<img draggable="false" class="emoji" src="${emoji.url}"/>`;
+        messagingElement.innerHTML += `<svg class="twemoji emoji"><use xlink:href="#${toCodePoints(emoji.text).join('-')}"></use></svg>`;
       }
     });
   });
@@ -542,7 +543,7 @@ Hooks.on("renderChatMessage", async (message, element: JQuery) => {
   const regex = /^\s*$/;
   if (messagingElement.innerText.replace(regex, "") === "") {
     for (let i = 0; i < messagingElement.children.length; i++) {
-      if(messagingElement.children[i].className.includes("emoji")){
+      if(messagingElement.children[i].classList.contains("emoji")){
         messagingElement.children[i].classList.add("emoji-large")
       }
     }
@@ -567,18 +568,18 @@ Hooks.on("renderChatMessage", async (message, element: JQuery) => {
       }
     });
     const ButtonContent = document.createElement("div");
-    const EmojiImage = document.createElement("img");
     const EmojiReactions = document.createElement("p");
     EmojiReactions.textContent = `${voters.length}`;
-    if (key.includes("/")) {
+    if (key.includes("/")) { // Custom emoji
+      const EmojiImage = document.createElement("img");
+      EmojiImage.className = "emoji-image";
       EmojiImage.src = key;
+      ButtonContent.appendChild(EmojiImage);
     } else {
-      EmojiImage.src = parse(key)[0].url;
+      ButtonContent.innerHTML += `<svg class="emoji-image"><use xlink:href="#${toCodePoints(key).join('-')}"></use></svg>`;
     }
-    EmojiImage.className = "emoji-image";
     ButtonContent.className = "emoji-button-content";
     ButtonContent.title = voters.map((userId) => game.users?.get(userId)?.name).join(", ");
-    ButtonContent.appendChild(EmojiImage);
     ButtonContent.appendChild(EmojiReactions);
     button.appendChild(ButtonContent);
     if (isvoted) {
@@ -614,10 +615,7 @@ Hooks.on("renderChatMessage", async (message, element: JQuery) => {
   const messageElement = element[0];
   if (Object.entries(currentEmojiState).length < 4) {
     const p = document.createElement("button");
-    const EmojiImage = document.createElement("img");
-    EmojiImage.src = `https://twemoji.maxcdn.com/v/latest/svg/2795.svg`;
-    EmojiImage.className = "emoji-image";
-    p.appendChild(EmojiImage);
+    p.innerHTML += `<svg class="emoji-image"><use xlink:href="#2795"></use></svg>`;
     p.className += "emoji-button trigger";
 
     p.addEventListener("click", function() {

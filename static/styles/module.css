@@ -106,12 +106,12 @@
   position:absolute
 }
 
-img.emoji {
+img.emoji, svg.emoji {
   height: 1.2em;
   width: 1.2em;
   border: none;
 }
-img.emoji.emoji-large {
+img.emoji.emoji-large, svg.emoji.emoji-large {
   height:2.4em;
   width: 2.4em;
 }
@@ -160,6 +160,7 @@ img.emoji.emoji-large {
 
 .emoji-image {
   height: 1rem;
+  aspect-ratio: 1;
   border: none;
   margin-top: auto;
   margin-bottom: auto;
