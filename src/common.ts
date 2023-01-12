@@ -1,6 +1,25 @@
-export function toCodePoints(unicodeSurrogates) {
-  const result = [...unicodeSurrogates].map((c) => c.codePointAt(0).toString(16));
-  if (result[1] === "fe0f" && result.length <= 3)
-    result.splice(1, 1);
-  return result;
+const vs16RegExp = /\uFE0F/g;
+// avoid using a string literal like '\u200D' here because minifiers expand it inline
+const zeroWidthJoiner = String.fromCharCode(0x200d);
+
+const removeVS16s = rawEmoji => (rawEmoji.indexOf(zeroWidthJoiner) < 0 ? rawEmoji.replace(vs16RegExp, '') : rawEmoji);
+
+export function toCodePoints(unicodeSurrogates: string): Array<string> {
+  unicodeSurrogates = removeVS16s(unicodeSurrogates);
+  const points = [];
+  let char = 0;
+  let previous = 0;
+  let i = 0;
+  while (i < unicodeSurrogates.length) {
+    char = unicodeSurrogates.charCodeAt(i++);
+    if (previous) {
+      points.push((0x10000 + ((previous - 0xd800) << 10) + (char - 0xdc00)).toString(16) as never);
+      previous = 0;
+    } else if (char > 0xd800 && char <= 0xdbff) {
+      previous = char;
+    } else {
+      points.push(char.toString(16) as never);
+    }
+  }
+  return points;
 }
