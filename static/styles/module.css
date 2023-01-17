@@ -1,3 +1,43 @@
+#emojipleter {
+  position: absolute;
+  z-index: 200;
+  background: url(../../../ui/denim075.png) repeat;
+  padding: 0;
+  border-radius: 0.5em;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  max-height: 500px;
+}
+
+#emojipleter .emojipleter-emojilist {
+  list-style-type: none;
+  padding: 0;
+  color: #ccc;
+  display: flex;
+  flex-flow: column-reverse nowrap;
+}
+
+#emojipleter .emojipleter-emoji {
+  padding: 0.5em 0.25em;
+  border-radius: 0.5em;
+  display: flex;
+  align-items: center;
+}
+
+#emojipleter span {
+  white-space: nowrap;
+}
+
+#emojipleter .emojipleter-emoji.selected{
+  background: #6594d6;
+}
+
+#emojipleter .emoji {
+  margin-right: 0.5em;
+  width: 1.5em;
+  height: 1.5em;
+}
+
 .emoji-button {
   color: white;
   border-radius: 10px;
@@ -20,7 +60,7 @@
   position:relative;
 }
 
-#chat-message{
+#chat-controls:not(:has(.emoji-picker-button--compact)) ~ #chat-form #chat-message{
   padding-left: 2.75em;
   padding-top: 0.75em;
 }
@@ -29,7 +69,28 @@
   position: relative;
 }
 
+.chat-sidebar #chat-controls .roll-type-select {
+  flex-basis: auto;
+  width: 50%;
+  flex-grow: 7;
+}
 
+.chat-sidebar #chat-controls .control-buttons {
+  flex: unset;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Make compact emoji button compatible with df-chat-enhance replaced roll buttons */
+#chat-controls:has(.emoji-picker-button--compact) #dfcp-rt-buttons :is(.chat-archive, .export-log, .chat-flush) {
+  display: none;
+}
+
+/* Make compact emoji button clickable when in DF Chat Enhancements merged message */
+.message-metadata {
+  z-index: 1;
+  max-height: 0; /* Make player view consistent with GM view */
+}
 
 .emojiPickerButton {
   height: 1.75rem;
@@ -45,14 +106,13 @@
   position:absolute
 }
 
-img.emoji {
+img.emoji, svg.emoji {
   height: 1.2em;
   width: 1.2em;
-  margin: 0.05em 0.1em;
-  vertical-align: -0.1em;
   border: none;
+  vertical-align: -.1em;
 }
-img.emoji.emoji-large {
+img.emoji.emoji-large, svg.emoji.emoji-large {
   height:2.4em;
   width: 2.4em;
 }
@@ -61,8 +121,21 @@ img.emoji.emoji-large {
   filter: invert(100%);
 }
 
-.emoji-picker__wrapper {
-  z-index: 30;
+.popupContainer {
+  z-index: 1000; /* So it appears above popped-out chat logs */
+}
+
+.picmo-picker { /* Make more compact */
+  gap: 2px;
+}
+
+.picmo-picker .header {
+  padding-bottom: 0;
+  gap: 2px;
+}
+
+.picmo-picker .emojiCategory .categoryName {
+  font-family: 'Signika', sans-serif;
 }
 
 .reaction {
@@ -88,6 +161,7 @@ img.emoji.emoji-large {
 
 .emoji-image {
   height: 1rem;
+  aspect-ratio: 1;
   border: none;
   margin-top: auto;
   margin-bottom: auto;
