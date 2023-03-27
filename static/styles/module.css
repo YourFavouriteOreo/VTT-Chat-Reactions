@@ -121,20 +121,20 @@ img.emoji.emoji-large, svg.emoji.emoji-large {
   filter: invert(100%);
 }
 
-.popupContainer {
+.picmo__popupContainer {
   z-index: 1000; /* So it appears above popped-out chat logs */
 }
 
-.picmo-picker { /* Make more compact */
+.picmo__picker { /* Make more compact */
   gap: 2px;
 }
 
-.picmo-picker .header {
+.picmo__picker .picmo__header {
   padding-bottom: 0;
   gap: 2px;
 }
 
-.picmo-picker .emojiCategory .categoryName {
+.picmo__picker .emojiCategory .categoryName {
   font-family: 'Signika', sans-serif;
 }
 
