@@ -326,6 +326,7 @@ function createPicker(rootElement: HTMLElement = document.body) {
   }, {
     showCloseButton: true,
     onPositionLost: "close",
+    position: rootElement == document.body ? "auto" : "left",
   });
   newPicker.addEventListener("emoji:select", onEmojiInput);
   return newPicker;
