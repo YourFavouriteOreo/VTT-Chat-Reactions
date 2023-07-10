@@ -8,13 +8,18 @@
   "manifestPlusVersion": "1.0.0",
   "compatibility": {
     "minimum": "10",
-    "verified": "10"
+    "verified": "11"
   },
   "authors": [
     {
       "name": "YourFavouriteOreo",
       "url":"https://github.com/YourFavouriteOreo",
       "discord":"YourFavouriteOreo#6798"
+    },
+    {
+      "name": "Asinphi",
+      "url": "https://github.com/Asinphi",
+      "discord": "liu.j"
     },
     {
       "name": "Blackcloud",
