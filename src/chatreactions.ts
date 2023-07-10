@@ -286,7 +286,7 @@ Hooks.once("init", async () => {
     )}`,
     "--hover-background-color": "#e7f3f8",
   };
-  $("head").append(`<style class="emoji-picker__styles">.picmo-picker {${Object.entries(pickerCssRules).map(([key, value]) => `${key}: ${value};`).join("\n")}}</style>`);
+  $("head").append(`<style class="emoji-picker__styles">.picmo__picker {${Object.entries(pickerCssRules).map(([key, value]) => `${key}: ${value};`).join("\n")}}</style>`);
 });
 
 function onEmojiInput(selection) {
@@ -326,6 +326,7 @@ function createPicker(rootElement: HTMLElement = document.body) {
   }, {
     showCloseButton: true,
     onPositionLost: "close",
+    position: rootElement == document.body ? "auto" : "left",
   });
   newPicker.addEventListener("emoji:select", onEmojiInput);
   return newPicker;

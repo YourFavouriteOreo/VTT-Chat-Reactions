@@ -45,7 +45,7 @@
     "@picmo/popup-picker": "^5.7.2",
     "@picmo/renderer-twemoji": "^5.7.2",
     "axios": "^0.21.1",
-    "picmo": "^5.7.2",
+    "picmo": "^5.8.1",
     "twemoji-parser": "^14.0.0"
   }
 }
