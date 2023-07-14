@@ -58,8 +58,6 @@
     }
   ],
   "url": "https://github.com/YourFavouriteOreo/VTT-Chat-Reactions",
-  "manifest": "https://raw.githubusercontent.com/YourFavouriteOreo/VTT-Chat-Reactions/master/dist/module.json",
-  "download": "https://github.com/YourFavouriteOreo/VTT-Chat-Reactions/releases/download/1.4.0/chatreactions.zip",
   "media": [
     {
       "type": "icon",
