@@ -42,10 +42,10 @@
     "webpack-import-glob-loader": "^1.6.3"
   },
   "dependencies": {
-    "@picmo/popup-picker": "^5.7.2",
-    "@picmo/renderer-twemoji": "^5.7.2",
+    "@picmo/popup-picker": "^5.8.5",
+    "@picmo/renderer-twemoji": "^5.8.5",
     "axios": "^0.21.1",
-    "picmo": "^5.8.1",
+    "picmo": "^5.8.5",
     "twemoji-parser": "^14.0.0"
   }
 }
