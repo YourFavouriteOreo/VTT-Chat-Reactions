@@ -318,6 +318,7 @@ function createPicker(rootElement: HTMLElement = document.body) {
   const newPicker = createPopup({
     rootElement: rootElement,
     renderer: new TwemojiRenderer(),
+    emojiVersion: 14,
     custom: customEmojis,
     categories: categories as any,
     initialCategory: "recents",
