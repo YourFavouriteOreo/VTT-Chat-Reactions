@@ -74,10 +74,6 @@
   padding-top: 0.75em;
 }
 
-#chat-controls {
-  position: relative;
-}
-
 .chat-sidebar #chat-controls .roll-type-select {
   flex-basis: auto;
   width: 50%;
